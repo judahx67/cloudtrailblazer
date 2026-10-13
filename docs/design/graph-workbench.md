@@ -1,10 +1,10 @@
 # Graph workbench: consolidated design
 
-Date: 2026-10-13. Status: interview choices recorded; consolidated design awaits the
-user's shared-understanding confirmation before implementation.
+Date: 2026-10-13. Status: approved by the user for staged implementation.
 
 This describes intended behavior, not delivered capabilities. The current application
-has a case module and CLI; the conversational comparison used hypothetical data.
+has case and relationship modules with a CLI; the conversational comparison used
+hypothetical data. Rendering and graph interactions remain future work.
 
 ## Purpose and audience
 

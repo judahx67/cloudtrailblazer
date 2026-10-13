@@ -2,7 +2,7 @@
 
 import hashlib
 import tempfile
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -44,6 +44,18 @@ def _timestamp(value: str) -> datetime:
         return result.astimezone(UTC)
     except (ValueError, AttributeError) as exc:
         raise ImportFailure("eventTime must be an ISO timestamp with a timezone") from exc
+
+
+def _time_filter(start: str | None, end: str | None) -> tuple[str, list]:
+    bounds = [_timestamp(value) if value is not None else None for value in (start, end)]
+    if all(bounds) and bounds[0] >= bounds[1]:
+        raise ValueError("start must precede end")
+    sql, values = " WHERE TRUE", []
+    for operator, bound in zip((">=", "<"), bounds, strict=True):
+        if bound is not None:
+            sql += f" AND event_time {operator} ?"
+            values.append(bound)
+    return sql, values
 
 
 def _row(event: dict) -> tuple:
@@ -198,17 +210,10 @@ class CaseStore:
         self.inspect(case_id)
         if not 1 <= limit <= 500 or offset < 0:
             raise ValueError("limit must be 1..500 and offset must be nonnegative")
-        bounds = [_timestamp(value) if value else None for value in (start, end)]
-        if all(bounds) and bounds[0] >= bounds[1]:
-            raise ValueError("start must precede end")
+        where, values = _time_filter(start, end)
         sql = """SELECT event_key, event_id, event_time, event_source, event_name,
-                        outcome, account_id, actor_arn, source_ip, region FROM events WHERE TRUE"""
-        values = []
-        for operator, bound in zip((">=", "<"), bounds, strict=True):
-            if bound:
-                sql += f" AND event_time {operator} ?"
-                values.append(bound)
-        sql += " ORDER BY event_time, event_key LIMIT ? OFFSET ?"
+                        outcome, account_id, actor_arn, source_ip, region FROM events"""
+        sql += where + " ORDER BY event_time, event_key LIMIT ? OFFSET ?"
         with duckdb.connect(str(self._path(case_id) / "case.duckdb"), read_only=True) as db:
             db.execute("SET TimeZone = 'UTC'")
             result = db.execute(sql, [*values, limit, offset])
@@ -217,6 +222,35 @@ class CaseStore:
         for row in rows:
             row["event_time"] = row["event_time"].isoformat()
         return rows
+
+    def iter_events(
+        self, case_id: str, *, start: str | None = None, end: str | None = None
+    ) -> Iterator[dict]:
+        """Scan unique events in deterministic order for local analytical modules.
+
+        The iterator owns a read-only connection until exhausted or closed. Each row
+        includes parsed original contents; callers must not accumulate an unbounded scan.
+        """
+        self.inspect(case_id)
+        where, values = _time_filter(start, end)
+        sql = (
+            "SELECT event_key, event_time, event_id, event_source, event_name, outcome, raw_json "
+            "FROM events"
+        )
+        with duckdb.connect(str(self._path(case_id) / "case.duckdb"), read_only=True) as db:
+            db.execute("SET TimeZone = 'UTC'")
+            result = db.execute(sql + where + " ORDER BY event_time, event_key", values)
+            while batch := result.fetchmany(256):
+                for key, time, event_id, service, action, outcome, raw in batch:
+                    yield {
+                        "event_key": key,
+                        "event_time": time.isoformat(),
+                        "event_id": event_id,
+                        "event_source": service,
+                        "event_name": action,
+                        "outcome": outcome,
+                        "event": json.loads(raw, use_decimal=True),
+                    }
 
     def evidence(self, case_id: str, event_key: str) -> dict:
         manifest = self.inspect(case_id)

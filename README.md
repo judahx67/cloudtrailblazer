@@ -1,14 +1,17 @@
 # Cloudtrailblazer
 
-A local CloudTrail investigation workbench, beginning with the case module.
+A local CloudTrail investigation workbench with case storage and relationship queries.
 
 Agents in the owner's workspace start with the local, Git-ignored `AGENTS.md`.
 See [the current project state](docs/project-state.md) for completed milestones,
 validation and the next increment. Other checkouts should use this README, the
 state document and the accepted decisions; the local anchor is not distributed.
 
-The first milestone imports AWS logs, preserves evidence and queries events. Graphs,
-the web interface and Suzaku detection jobs are subsequent milestones.
+The backend imports AWS logs, preserves evidence and projects relationships. The web
+interface, graph rendering and Suzaku detection jobs are subsequent milestones.
+
+Each coding increment uses a feature branch and a separate pull request for review.
+Keep commit messages simple. Merge only after the owner's review and instruction.
 
 ## Development
 
@@ -30,12 +33,29 @@ uv run --locked cloudtrailblazer import upstream/suzaku/test_files/json/test.jso
 uv run --locked cloudtrailblazer inspect <case-id>
 uv run --locked cloudtrailblazer events <case-id> --limit 25
 uv run --locked cloudtrailblazer evidence <case-id> <event-key>
+uv run --locked cloudtrailblazer identities <case-id> --search alice
+uv run --locked cloudtrailblazer graph <case-id> --identity <identity-id>
+uv run --locked cloudtrailblazer graph <case-id> --expand-sessions
+uv run --locked cloudtrailblazer connection-events <case-id> <connection-id> --limit 25
 ```
 
 The commands return JSON. Cases live in `.local/cases`; `--data-dir <path>` before
 the subcommand selects another location. Event queries support `--offset`, `--start`
 and `--end`. Time bounds require timezone offsets and use an inclusive start and
 exclusive end. Event keys come from the event query results.
+
+Relationship queries share those time bounds. Identity IDs come from `identities`;
+connection IDs come from `graph`. Pass the same scope options to `connection-events`
+to retrieve supporting events in that view, then open their evidence by event key.
+Identity lists and connection-event pages support `--limit` and `--offset`.
+
+Recorded role issuers group sessions by default; `--expand-sessions` reveals them.
+Unknown targets become service nodes marked `target_unspecified`. Failed attempts
+remain separate from calls with no reported error. Queries fail explicitly if scan
+or graph budgets are exceeded; narrow the time range or graph identity focus.
+This is backend data, not a rendered graph. See the
+[relationship contract](docs/decisions/0002-relationship-projection.md) for resolution
+rules, budgets and limitations.
 
 Imported source files are copied byte-for-byte. Event hashes use canonical JSON;
 formatting and object key order do not create extra events. All source occurrences
