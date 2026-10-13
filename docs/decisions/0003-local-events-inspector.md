@@ -66,7 +66,8 @@ unknown routes follow ordinary HTTP status codes. Unsupported write methods are 
 
 The screen follows the reviewed structure: narrow case rail, central Events table,
 right evidence inspector and a compact status line. Use matte surfaces, square
-controls, thin lines, monospace text and a full outline for selected rows/controls.
+controls, thin lines and a full outline for selected rows/controls. Subsequent review
+requires a light theme and system sans-serif labels, with monospace for JSON/timestamps.
 The inspector stacks below the table on smaller screens; the narrow table can scroll.
 
 Case buttons open summaries/events. Exact time inputs use an explicit Apply control
@@ -80,7 +81,8 @@ the transport finishes despite cancellation. Case changes clear selected evidenc
 Time changes retain evidence but mark it while scope is pending, outside range, or
 unverified after a failed query. UTC comparisons preserve microsecond boundaries.
 Loading, empty and error states remain visible; keyboard buttons and source disclosure
-controls use native browser behavior. There are no synthetic detections or graph tabs.
+controls use native browser behavior. There are no synthetic detections. The later
+[Identity focus increment](0004-identity-neighborhood.md) adds graph navigation.
 
 ## Verification and remaining work
 

@@ -10,7 +10,7 @@
   <script type="module" src="/assets/app.mjs"></script>
 </head>
 <body>
-  <header class="app-header"><h1>Cloudtrailblazer</h1><span class="muted">local &gt; events</span></header>
+  <header class="app-header"><h1>Cloudtrailblazer</h1><span class="muted" id="view-path">local &gt; identity</span></header>
   <div class="workbench">
     <aside class="cases panel" aria-label="Case browser">
       <div class="panel-heading"><h2>Cases</h2><button id="refresh-cases" title="Reload imported cases">Refresh</button></div>
@@ -18,8 +18,9 @@
       <div id="case-list" class="case-list"></div>
       <div class="pager"><button id="cases-prev" disabled aria-label="Previous cases">Prev</button><span id="cases-page" class="muted">0 cases</span><button id="cases-next" disabled aria-label="Next cases">Next</button></div>
     </aside>
-    <main class="events panel" aria-label="Events workspace">
-      <div class="panel-heading"><h2 id="case-name">Events</h2><span id="case-count" class="muted"></span></div>
+    <main class="events panel" aria-label="Investigation workspace">
+      <div class="panel-heading"><h2 id="case-name">Investigation</h2><span id="case-count" class="muted"></span></div>
+      <div class="view-switch" role="group" aria-label="Investigation view"><button id="view-identity" aria-pressed="true" disabled>Identity focus</button><button id="view-events" aria-pressed="false" disabled>Events</button></div>
       <form id="time-form" class="time-form">
         <label>Start: UTC<input id="time-start" type="text" placeholder="ISO timestamp" spellcheck="false" disabled aria-describedby="time-help"></label>
         <label>End: UTC<input id="time-end" type="text" placeholder="ISO timestamp" spellcheck="false" disabled aria-describedby="time-help"></label>
@@ -28,15 +29,30 @@
         <span id="time-help" class="sr-only">Start included; end excluded. Enter an ISO timestamp with a timezone offset. Blank bounds are open.</span>
       </form>
       <p id="events-status" class="notice" role="status">Choose a case.</p>
+      <section id="graph-workspace" aria-label="Identity focus workspace">
+        <form id="identity-search-form" class="identity-search-form"><label for="identity-search">Identity search</label><div class="search-controls"><input id="identity-search" type="search" placeholder="Name, ARN or account" disabled><button id="identity-search-submit" disabled>Search</button></div></form>
+        <p id="identity-status" class="notice" role="status"></p>
+        <div id="identity-list" class="identity-list"></div>
+        <div class="pager"><button id="identities-prev" aria-label="Previous identities" disabled>Prev</button><span id="identities-page" class="muted"></span><button id="identities-next" aria-label="Next identities" disabled>Next</button></div>
+        <div class="panel-heading"><h3>Neighborhood</h3><span id="graph-count" class="muted"></span></div>
+        <p id="graph-status" class="notice" role="status">Choose a case.</p>
+        <div id="graph-canvas" class="graph-canvas"></div>
+        <p class="graph-legend muted">S: observed source &gt; identity. A: identity &gt; target. Failed attempts: dashed.</p>
+        <div id="connection-list" class="connection-list" role="group" aria-label="Observed connections"></div>
+      </section>
+      <section id="event-section" class="event-section" aria-label="Event list" hidden>
+      <div id="connection-heading" class="panel-heading" hidden><h3>Supporting events</h3><span id="connection-name" class="muted"></span></div>
       <div class="table-wrap" id="event-region" aria-busy="false">
         <table><caption class="sr-only">CloudTrail events in the applied time range</caption><thead><tr><th scope="col">Time: UTC</th><th scope="col">Action</th><th scope="col">Actor</th><th scope="col">Outcome</th></tr></thead><tbody id="event-rows"></tbody></table>
       </div>
       <div class="pager"><button id="events-prev" disabled aria-label="Previous events">Prev</button><span id="events-page" class="muted">0 events</span><button id="events-next" disabled aria-label="Next events">Next</button></div>
+      </section>
     </main>
     <aside class="inspector panel" aria-label="Evidence inspector">
       <div class="panel-heading"><h2>Evidence</h2><button id="copy-json" data-copy-target="raw-json" disabled>Copy JSON</button></div>
       <p id="evidence-status" class="notice" role="status">Select an event.</p>
       <p id="stale-evidence" class="notice warning" hidden></p>
+      <div id="graph-details" hidden><h3 id="graph-detail-title"></h3><dl id="graph-detail-fields" class="event-details"></dl><p id="graph-detail-note" class="notice"></p></div>
       <div id="evidence-content" hidden>
         <dl id="event-details" class="event-details"></dl>
         <div class="code-block">

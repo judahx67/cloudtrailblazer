@@ -3,9 +3,10 @@
 Date: 2026-10-13. Status: approved by the user for staged implementation.
 
 This describes intended behavior, not delivered capabilities. The current application
-has case and relationship modules, a CLI and a local Events inspector. The
-conversational comparison used hypothetical data. Rendering and graph interactions
-remain future work.
+has case and relationship modules, a CLI, a local Events inspector and an initial
+Identity focus neighborhood. The conversational comparison used hypothetical data.
+Case overview, session expansion, density groups, pan/zoom, Expand, the slider and
+subgraph navigation remain future work. See [the initial renderer decision](../decisions/0004-identity-neighborhood.md).
 
 ## Purpose and audience
 

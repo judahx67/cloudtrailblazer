@@ -28,7 +28,7 @@ input { width: 100%; padding: 4px 7px; }
 .warning { color: var(--warning); }
 .app-header, footer, .panel-heading, .pager, .code-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .app-header { min-height: 47px; padding: 0 15px; border-bottom: 1px solid var(--line); }
-.workbench { flex: 1; min-height: 0; display: grid; grid-template-columns: 220px minmax(420px, 1fr) minmax(320px, 390px); }
+.workbench { flex: 1; min-height: 0; display: grid; grid-template-columns: 180px minmax(420px, 1fr) minmax(300px, 330px); }
 .panel { min-width: 0; }
 .cases, .events { border-right: 1px solid var(--line); }
 .cases, .events { display: flex; flex-direction: column; min-height: 0; }
@@ -45,6 +45,35 @@ input { width: 100%; padding: 4px 7px; }
 .time-form label { flex: 1 1 220px; min-width: 0; color: var(--muted); font-size: 12px; }
 .time-form input { margin-top: 4px; color: var(--text); font-family: var(--mono); font-size: 12px; }
 .table-wrap { flex: 1; overflow: auto; }
+.event-section { display: flex; flex: 1; flex-direction: column; min-height: 180px; }
+.view-switch { display: flex; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+button[aria-pressed="true"] { border-color: var(--accent); background: var(--selection); }
+#graph-workspace { overflow: auto; min-height: 0; }
+.identity-search-form { padding: 8px 12px; }
+.search-controls { display: flex; gap: 8px; margin-top: 4px; }
+.identity-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px; padding: 0 12px 8px; max-height: 160px; overflow: auto; }
+.identity-choice { display: flex; flex-direction: column; text-align: left; min-width: 0; }
+.identity-choice span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.identity-choice .muted { font-size: 12px; }
+#graph-count { font-size: 12px; }
+.graph-canvas { overflow: auto; max-height: 390px; padding: 0 4px; }
+.graph-canvas svg { display: block; font: 12px "Segoe UI", Arial, sans-serif; }
+.graph-column, .graph-kind { fill: var(--muted); }
+.graph-kind { font-size: 11px; }
+.graph-node, .graph-edge { cursor: pointer; outline: none; }
+.graph-node rect, .graph-edge rect { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.graph-node text, .graph-edge text { fill: var(--text); pointer-events: none; }
+.graph-node .graph-kind { fill: var(--muted); }
+.graph-edge polyline { fill: none; stroke: var(--line); stroke-width: 1; }
+.graph-edge.failed polyline { stroke: var(--warning); stroke-dasharray: 4 3; }
+.graph-edge polyline.graph-hit { stroke-width: 12; opacity: 0; }
+.graph-edge.failed text { fill: var(--warning); }
+.graph-arrow { fill: var(--muted); }
+.graph-node:hover rect, .graph-edge:hover rect, .graph-node[aria-pressed="true"] rect, .graph-edge[aria-pressed="true"] rect { stroke: var(--accent); fill: var(--selection); }
+.graph-node:focus-visible rect, .graph-edge:focus-visible rect { stroke: var(--accent); stroke-width: 3; }
+.graph-legend { padding: 6px 12px; font-size: 12px; }
+.connection-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 12px 12px; }
+.connection-choice { font-size: 12px; text-align: left; }
 table { width: 100%; min-width: 480px; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
 th { color: var(--muted); font-weight: 400; position: sticky; top: 0; background: var(--background); text-align: left; z-index: 1; }
 th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
