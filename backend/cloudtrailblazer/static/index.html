@@ -36,7 +36,17 @@
         <div class="pager"><button id="identities-prev" aria-label="Previous identities" disabled>Prev</button><span id="identities-page" class="muted"></span><button id="identities-next" aria-label="Next identities" disabled>Next</button></div>
         <div class="panel-heading"><h3>Neighborhood</h3><span id="graph-count" class="muted"></span></div>
         <p id="graph-status" class="notice" role="status">Choose a case.</p>
-        <div id="graph-canvas" class="graph-canvas"></div>
+        <div id="graph-stage" class="graph-stage">
+          <div id="graph-canvas" class="graph-canvas"></div>
+          <section id="subgraph-window" class="subgraph-window" aria-label="Subgraph window" hidden>
+            <div class="subgraph-toolbar"><button id="subgraph-back" title="Return to the main graph">Back</button><h3 id="subgraph-title"></h3><button id="subgraph-close">Close</button></div>
+            <div class="subgraph-controls"><button id="subgraph-move" aria-label="Move subgraph window" title="Drag or use Arrow keys">Move</button><button id="subgraph-resize" aria-label="Resize subgraph window" title="Use Arrow keys; or drag the lower-right corner">Resize</button><span id="subgraph-count" class="muted"></span></div>
+            <form id="subgraph-search-form" class="search-controls"><label class="sr-only" for="subgraph-search">Group member search</label><input id="subgraph-search" type="search" placeholder="Member name or locator"><button id="subgraph-search-submit">Search</button></form>
+            <p id="subgraph-status" class="notice" role="status"></p>
+            <div class="subgraph-content"><div id="subgraph-members" class="identity-list"></div><div id="subgraph-canvas" class="graph-canvas"></div><div id="subgraph-connections" class="connection-list" role="group" aria-label="Subgraph connections"></div></div>
+            <div class="pager"><button id="members-prev" aria-label="Previous group members" disabled>Prev</button><span id="members-page" class="muted"></span><button id="members-next" aria-label="Next group members" disabled>Next</button></div>
+          </section>
+        </div>
         <p class="graph-legend muted">S: observed source &gt; identity. A: identity &gt; target. Failed attempts: dashed.</p>
         <div id="connection-list" class="connection-list" role="group" aria-label="Observed connections"></div>
       </section>
@@ -52,7 +62,7 @@
       <div class="panel-heading"><h2>Evidence</h2><button id="copy-json" data-copy-target="raw-json" disabled>Copy JSON</button></div>
       <p id="evidence-status" class="notice" role="status">Select an event.</p>
       <p id="stale-evidence" class="notice warning" hidden></p>
-      <div id="graph-details" hidden><h3 id="graph-detail-title"></h3><dl id="graph-detail-fields" class="event-details"></dl><p id="graph-detail-note" class="notice"></p></div>
+      <div id="graph-details" hidden><h3 id="graph-detail-title"></h3><dl id="graph-detail-fields" class="event-details"></dl><p id="graph-detail-note" class="notice"></p><button id="open-group" class="inspector-control" hidden>Open group</button></div>
       <div id="evidence-content" hidden>
         <dl id="event-details" class="event-details"></dl>
         <div class="code-block">

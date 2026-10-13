@@ -1,6 +1,7 @@
 # 0005: Grouped neighborhoods and bounded member graphs
 
-2026-10-13. Backend implemented on `feature/grouped-neighborhoods`; UI follows separately.
+2026-10-13. Backend implemented on `feature/grouped-neighborhoods` (PR #5).
+The dependent [subgraph window](0006-subgraph-window.md) adds the UI in a separate PR.
 
 The first renderer fails explicitly on dense views. Add presentation groups over the
 same scoped projection instead of dropping links or returning an oversized diagram.
@@ -44,4 +45,5 @@ for every member. It does not bound peak projection memory or prove large-case s
 Tests cover 61 targets, multi-target events, duplicate occurrences, separate outcomes,
 mixed actions, member pages/search, stable child evidence IDs, HTTP/time/identity
 validation and service/owner/region/fallback boundaries. Existing UI remains unchanged
-in this PR. The next increment adds the single in-app window and grouped fallback.
+in PR #5. The dependent UI increment adds ordered member IDs and refreshed group metadata
+to member pages, the single in-app window and grouped fallback.

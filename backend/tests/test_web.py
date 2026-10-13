@@ -225,6 +225,7 @@ def test_local_browser_security_and_bundled_assets(tmp_path):
             "graph.mjs",
             "identity-workbench.mjs",
             "ui.mjs",
+            "subgraph-window.mjs",
         ):
             response = http.get(f"/assets/{path}")
             assert response.status_code == 200

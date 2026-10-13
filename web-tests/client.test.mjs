@@ -36,6 +36,15 @@ test("HTTP errors retain their actionable message", async () => {
   await assert.rejects(requests.get("graph"), /Narrow the time range/);
 });
 
+test("projection failures can be distinguished from missing and unavailable cases", async () => {
+  for (const status of [404, 409, 413]) {
+    const requests = new LatestRequest(async () => ({ ok:false, status,
+      json:async()=>({error:{code:status===413?"projection_limit":"other",message:"Failed"}}) }));
+    await assert.rejects(requests.get("graph"), error => error.status === status &&
+      error.code === (status===413?"projection_limit":"other"));
+  }
+});
+
 test("an old network failure cannot overwrite a newer successful view", async () => {
   const pending = [];
   const requests = new LatestRequest(() => new Promise((resolve, reject) =>
