@@ -3,8 +3,9 @@
 Date: 2026-10-13. Status: approved by the user for staged implementation.
 
 This describes intended behavior, not delivered capabilities. The current application
-has case and relationship modules with a CLI; the conversational comparison used
-hypothetical data. Rendering and graph interactions remain future work.
+has case and relationship modules, a CLI and a local Events inspector. The
+conversational comparison used hypothetical data. Rendering and graph interactions
+remain future work.
 
 ## Purpose and audience
 

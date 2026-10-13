@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Cloudtrailblazer</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/assets/workbench.css">
+  <script type="module" src="/assets/app.mjs"></script>
+</head>
+<body>
+  <header class="app-header"><h1>Cloudtrailblazer</h1><span class="muted">local &gt; events</span></header>
+  <div class="workbench">
+    <aside class="cases panel" aria-label="Case browser">
+      <div class="panel-heading"><h2>Cases</h2><button id="refresh-cases" title="Reload imported cases">Refresh</button></div>
+      <p id="case-status" class="notice" role="status">Loading cases...</p>
+      <div id="case-list" class="case-list"></div>
+      <div class="pager"><button id="cases-prev" disabled aria-label="Previous cases">Prev</button><span id="cases-page" class="muted">0 cases</span><button id="cases-next" disabled aria-label="Next cases">Next</button></div>
+    </aside>
+    <main class="events panel" aria-label="Events workspace">
+      <div class="panel-heading"><h2 id="case-name">Events</h2><span id="case-count" class="muted"></span></div>
+      <form id="time-form" class="time-form">
+        <label>Start: UTC<input id="time-start" type="text" placeholder="ISO timestamp" spellcheck="false" disabled aria-describedby="time-help"></label>
+        <label>End: UTC<input id="time-end" type="text" placeholder="ISO timestamp" spellcheck="false" disabled aria-describedby="time-help"></label>
+        <button id="apply-time" type="submit" disabled>Apply</button><button id="reset-time" type="button" disabled title="Restore full case range">Reset</button>
+        <span id="time-draft" class="muted" role="status"></span>
+        <span id="time-help" class="sr-only">Start included; end excluded. Enter an ISO timestamp with a timezone offset. Blank bounds are open.</span>
+      </form>
+      <p id="events-status" class="notice" role="status">Choose a case.</p>
+      <div class="table-wrap" id="event-region" aria-busy="false">
+        <table><caption class="sr-only">CloudTrail events in the applied time range</caption><thead><tr><th scope="col">Time: UTC</th><th scope="col">Action</th><th scope="col">Actor</th><th scope="col">Outcome</th></tr></thead><tbody id="event-rows"></tbody></table>
+      </div>
+      <div class="pager"><button id="events-prev" disabled aria-label="Previous events">Prev</button><span id="events-page" class="muted">0 events</span><button id="events-next" disabled aria-label="Next events">Next</button></div>
+    </main>
+    <aside class="inspector panel" aria-label="Evidence inspector">
+      <div class="panel-heading"><h2>Evidence</h2><button id="copy-json" disabled>Copy JSON</button></div>
+      <p id="evidence-status" class="notice" role="status">Select an event.</p>
+      <p id="stale-evidence" class="notice warning" hidden></p>
+      <div id="evidence-content" hidden>
+        <dl id="event-details" class="event-details"></dl>
+        <h3>Original JSON</h3><pre id="raw-json" tabindex="0" aria-label="Original normalized event JSON"></pre>
+        <div class="panel-heading sources-heading"><h3>Sources</h3><span id="source-count" class="muted"></span></div>
+        <p id="sources-status" class="notice" role="status" hidden></p>
+        <div id="source-list"></div>
+        <div class="pager"><button id="sources-prev" disabled aria-label="Previous source occurrences">Prev</button><span id="sources-page" class="muted"></span><button id="sources-next" disabled aria-label="Next source occurrences">Next</button></div>
+      </div>
+    </aside>
+  </div>
+  <footer><span id="workspace-status" role="status">Read only</span><span class="muted">CloudTrail &gt; recorded evidence</span></footer>
+</body>
+</html>

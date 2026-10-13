@@ -3,7 +3,7 @@
 import hashlib
 import tempfile
 from collections.abc import Iterator, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -47,7 +47,12 @@ def _timestamp(value: str) -> datetime:
 
 
 def _time_filter(start: str | None, end: str | None) -> tuple[str, list]:
-    bounds = [_timestamp(value) if value is not None else None for value in (start, end)]
+    bounds = []
+    for field, value in (("start", start), ("end", end)):
+        try:
+            bounds.append(_timestamp(value) if value is not None else None)
+        except ImportFailure as exc:
+            raise ImportFailure(f"{field} must be an ISO timestamp with a timezone") from exc
     if all(bounds) and bounds[0] >= bounds[1]:
         raise ValueError("start must precede end")
     sql, values = " WHERE TRUE", []
@@ -110,6 +115,71 @@ class CaseStore:
         if manifest.get("schema_version") != SCHEMA_VERSION:
             raise ValueError("Unsupported case schema version")
         return manifest
+
+    def list_cases(self, *, limit: int = 100, offset: int = 0) -> dict:
+        """Discover published cases, reporting unreadable cases without exposing paths."""
+        if not 1 <= limit <= 500 or offset < 0:
+            raise ValueError("limit must be 1..500 and offset must be nonnegative")
+        items, unavailable = [], 0
+        for path in self.root.iterdir() if self.root.exists() else []:
+            if path.is_symlink() or not path.is_dir():
+                continue
+            try:
+                if str(UUID(path.name)) != path.name:
+                    continue
+            except ValueError:
+                continue
+            try:
+                manifest = self.inspect(path.name)
+                item = {
+                    field: manifest[field]
+                    for field in ("case_id", "name", "created_at", "event_count")
+                }
+                if (
+                    item["case_id"] != path.name
+                    or not isinstance(item["name"], str)
+                    or not isinstance(item["created_at"], str)
+                    or type(item["event_count"]) is not int
+                    or item["event_count"] < 0
+                ):
+                    raise ValueError("Invalid case metadata")
+                items.append(item)
+            except (ValueError, OSError, KeyError, TypeError, AttributeError):
+                unavailable += 1
+        items.sort(key=lambda item: (item["created_at"], item["case_id"]), reverse=True)
+        return {
+            "total": len(items),
+            "unavailable_count": unavailable,
+            "items": items[offset : offset + limit],
+        }
+
+    def summary(self, case_id: str) -> dict:
+        """Case metadata and exact bounds covering every event, including the last."""
+        manifest = self.inspect(case_id)
+        with duckdb.connect(str(self._path(case_id) / "case.duckdb"), read_only=True) as db:
+            db.execute("SET TimeZone = 'UTC'")
+            first, last = db.execute(
+                "SELECT min(event_time), max(event_time) FROM events"
+            ).fetchone()
+        return {
+            **{
+                key: manifest[key]
+                for key in (
+                    "case_id",
+                    "name",
+                    "created_at",
+                    "event_count",
+                    "occurrence_count",
+                    "duplicate_count",
+                    "conflicting_event_id_count",
+                )
+            },
+            "source_count": len(manifest["sources"]),
+            "time_range": {
+                "start": first.isoformat() if first else None,
+                "end": (last + timedelta(microseconds=1)).isoformat() if last else None,
+            },
+        }
 
     def import_case(self, paths: Sequence[Path], *, name: str) -> dict:
         if not paths:
@@ -207,6 +277,18 @@ class CaseStore:
         end: str | None = None,
     ) -> list[dict]:
         """Time window is [start, end). Results sort by UTC time, then content hash."""
+        return self.event_page(case_id, limit=limit, offset=offset, start=start, end=end)["items"]
+
+    def event_page(
+        self,
+        case_id: str,
+        *,
+        limit: int = 100,
+        offset: int = 0,
+        start: str | None = None,
+        end: str | None = None,
+    ) -> dict:
+        """Bounded event summaries and the total matching count for navigation."""
         self.inspect(case_id)
         if not 1 <= limit <= 500 or offset < 0:
             raise ValueError("limit must be 1..500 and offset must be nonnegative")
@@ -216,12 +298,20 @@ class CaseStore:
         sql += where + " ORDER BY event_time, event_key LIMIT ? OFFSET ?"
         with duckdb.connect(str(self._path(case_id) / "case.duckdb"), read_only=True) as db:
             db.execute("SET TimeZone = 'UTC'")
+            total = db.execute("SELECT count(*) FROM events" + where, values).fetchone()[0]
             result = db.execute(sql, [*values, limit, offset])
             columns = [column[0] for column in result.description]
             rows = [dict(zip(columns, row, strict=True)) for row in result.fetchall()]
         for row in rows:
             row["event_time"] = row["event_time"].isoformat()
-        return rows
+        return {
+            "total": total,
+            "items": rows,
+            "scope": {
+                "start": _timestamp(start).isoformat() if start is not None else None,
+                "end": _timestamp(end).isoformat() if end is not None else None,
+            },
+        }
 
     def iter_events(
         self, case_id: str, *, start: str | None = None, end: str | None = None
