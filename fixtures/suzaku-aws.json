@@ -1,0 +1,37 @@
+{
+  "upstream": "https://github.com/Yamato-Security/suzaku",
+  "revision": "306c12a421369dc0aee03ecce521ee09634ee2f6",
+  "expected_occurrence_count": 33,
+  "sources": [
+    {
+      "path": "upstream/suzaku/test_files/json/test.json",
+      "sha256": "f28c0898913928df0a6d89db42bd94d59ec7f982c8dee41a855031c4b5383fac",
+      "records": 29
+    },
+    {
+      "path": "upstream/suzaku/test_files/json/DeleteTrail.json",
+      "sha256": "f0e580ae611bd397a0482d879d9b0ade14e661eba74ecbca03e99198b1aaa070",
+      "records": 1
+    },
+    {
+      "path": "upstream/suzaku/test_files/json/LookupEvents.json",
+      "sha256": "72fd06e4a72a872f1041fdb1a2e782e11fb7b475ea972502c45a82a825a141b5",
+      "records": 1
+    },
+    {
+      "path": "upstream/suzaku/test_files/json/PutEventSelectors.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "records": 0
+    },
+    {
+      "path": "upstream/suzaku/test_files/json/StopLogging.json",
+      "sha256": "f065c3437657451edb5d3df9b309a1a7235e98136dd7cbb6d9663a9d2385fdf4",
+      "records": 1
+    },
+    {
+      "path": "upstream/suzaku/test_files/json/UpdateTrail.json",
+      "sha256": "847f524169f0b16a9d130c4320339be5866fd653533be7d086e9d1bba40668aa",
+      "records": 1
+    }
+  ]
+}
