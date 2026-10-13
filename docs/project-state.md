@@ -5,7 +5,9 @@ Last updated: 2026-10-13. Latest implementation checkpoint: `20cec7a`.
 ## Current milestone
 
 The local case foundation is complete. Agent guidance and project-manager reporting
-expectations are now documented in the root `AGENTS.md`.
+expectations are documented in a local, Git-ignored root `AGENTS.md`.
+The remote is `https://github.com/judahx67/cloudtrailblazer.git`, with `judahx67`
+selected by repository-local Git credential configuration. No push has been performed.
 
 Implemented capabilities:
 
@@ -35,9 +37,10 @@ agent environment, tests needed execution outside the sandbox because strict pat
 resolution was denied for workspace files. Test outputs stayed under `.local/`.
 No import/query benchmarks or browser performance measurements have been run.
 
-The agent-guidance increment changes documentation only. Links, consistency and the
+The repository-configuration increment changes Git settings and documentation only.
+Account availability, repository access, ignored-file behavior, references and the
 Git diff are checked; the foundation test results above are historical, not rerun for
-this documentation change.
+these changes.
 
 ## Known limitations and open decisions
 
@@ -49,6 +52,8 @@ this documentation change.
 - Identity/session resolution, resource extraction and graph grouping need explicit
   semantics. Missing fields must not produce inferred targets without supporting evidence.
 - The wrapper's distribution/license decision remains open; upstream Suzaku uses AGPLv3.
+- `AGENTS.md` is removed from current tracking but remains in earlier local commits.
+  Ignoring a file does not remove its historical contents.
 - No new blocker prevents the next design increment.
 
 ## Recommended next increment
@@ -66,3 +71,4 @@ inspector. Renderer selection follows measured graph workloads.
 | 2026-10-13 | Upstream inspection and project shape | Pinned Suzaku checkout and rules; documented architecture and visual direction. |
 | 2026-10-13 | Case foundation (`20cec7a`) | Durable imports, event queries, evidence retrieval, locked dependencies and 21 passing tests. |
 | 2026-10-13 | Agent anchor and reporting | Root `AGENTS.md`, current-state document and a required milestone reporting format. |
+| 2026-10-13 | Repository identity and local anchor | Configured the judahx67 remote/account preference; kept `AGENTS.md` locally and removed it from tracking. |
