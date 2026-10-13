@@ -112,8 +112,11 @@ validate on representative workloads. Nested windows are not part of this design
 
 ## Visual rules
 
-Use simple lines, square controls, a matte charcoal surface, off-white text and muted
-pastel accents. Keep labels concise; secondary explanation belongs in hover/focus
+Use simple lines, square controls, matte light surfaces, dark text and muted
+pastel selection fills. The user requires a professional light theme only. Use system
+sans-serif for interface labels and monospace for JSON and technical values. The first
+inspector used Consolas throughout; this direction supersedes that font treatment.
+Keep labels concise; secondary explanation belongs in hover/focus
 details or the inspector. Essential errors, outcome indicators and scope remain visible.
 
 Do not use decorative gradients, rounded card collections, shadows or ornamental
@@ -124,6 +127,13 @@ Do not spam middle-dot separators. Use `:` for ordinary label/value pairs and `>
 paths or an intentional terminal-like treatment. Avoid left-edge accent stripes:
 when a border highlights an item, highlight all four sides. Apply this to entity-type
 accents and selected/active/focus states. Preserve accessible focus indicators.
+
+Reuse shared color and typography tokens, control styles and interaction contracts.
+Every code block must have a nearby keyboard-accessible Copy button that copies its
+full text without reparsing numbers. Verify text/control contrast, focus visibility,
+keyboard operation, target sizes and zoom/reflow in each UI increment. Essential
+information must not depend on color or hover alone. Full accessibility conformance
+requires a separate audit; browser spot checks are not a substitute.
 
 ## First web milestone acceptance criteria
 

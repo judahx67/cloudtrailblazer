@@ -69,7 +69,7 @@ Start with a Canvas renderer and deterministic layout, evaluated against a WebGL
 ## Interaction and visual contract
 
 - Fixed structure: narrow filter rail, large graph/table workspace, evidence inspector on the right, compact status line below. Graph and Events views share selection and filters.
-- Matte charcoal background, off-white text, muted pastel accents. One-pixel dividers, square controls, monospace labels, no gradients, shadows or decorative animation.
+- Professional light theme only: matte light surfaces, dark text and muted pastel selection fills. One-pixel dividers, square controls and system sans-serif labels; monospace for code and technical values. No gradients, shadows or decorative animation. Reuse shared tokens and controls, preserve keyboard focus, verify contrast/reflow, and provide a nearby Copy control for every code block.
 - Use `:` or `>` instead of repeated middle-dot separators. Highlight all four borders, not a left-edge accent stripe.
 - Color communicates entity type; severity uses a small distinct marker and text. Selection uses an outline so it remains recognizable without color.
 - Compact labels: `Open`, `Graph`, `Events`, `Time`, `Findings`, `Expand`. Use counts rather than explanatory paragraphs. Long identifiers truncate visually but can be inspected and copied in full.

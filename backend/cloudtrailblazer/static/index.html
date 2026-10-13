@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light">
   <title>Cloudtrailblazer</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/assets/workbench.css">
@@ -34,12 +34,15 @@
       <div class="pager"><button id="events-prev" disabled aria-label="Previous events">Prev</button><span id="events-page" class="muted">0 events</span><button id="events-next" disabled aria-label="Next events">Next</button></div>
     </main>
     <aside class="inspector panel" aria-label="Evidence inspector">
-      <div class="panel-heading"><h2>Evidence</h2><button id="copy-json" disabled>Copy JSON</button></div>
+      <div class="panel-heading"><h2>Evidence</h2><button id="copy-json" data-copy-target="raw-json" disabled>Copy JSON</button></div>
       <p id="evidence-status" class="notice" role="status">Select an event.</p>
       <p id="stale-evidence" class="notice warning" hidden></p>
       <div id="evidence-content" hidden>
         <dl id="event-details" class="event-details"></dl>
-        <h3>Original JSON</h3><pre id="raw-json" tabindex="0" aria-label="Original normalized event JSON"></pre>
+        <div class="code-block">
+          <div class="code-heading"><h3>Original JSON</h3><button data-copy-target="raw-json" disabled aria-label="Copy original JSON">Copy</button></div>
+          <pre id="raw-json" tabindex="0" aria-label="Original normalized event JSON"></pre>
+        </div>
         <div class="panel-heading sources-heading"><h3>Sources</h3><span id="source-count" class="muted"></span></div>
         <p id="sources-status" class="notice" role="status" hidden></p>
         <div id="source-list"></div>

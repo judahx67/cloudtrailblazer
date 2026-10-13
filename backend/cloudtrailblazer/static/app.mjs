@@ -78,7 +78,7 @@ function clearEvidence() {
   state.evidence = null;
   state.sourceOffset = 0;
   byId("evidence-content").hidden = true;
-  byId("copy-json").disabled = true;
+  setCodeCopyEnabled(false);
   byId("raw-json").textContent = "";
   notice("evidence-status", "Select an event.");
   staleNotice();
@@ -216,7 +216,7 @@ async function selectEvent(item) {
   state.sourceOffset = 0;
   state.evidence = null;
   byId("evidence-content").hidden = true;
-  byId("copy-json").disabled = true;
+  setCodeCopyEnabled(false);
   byId("raw-json").textContent = "";
   markSelection();
   checkSelectionScope();
@@ -264,7 +264,7 @@ async function loadEvidence() {
     notice("sources-status", "");
     byId("sources-status").hidden = true;
     byId("evidence-content").hidden = false;
-    byId("copy-json").disabled = false;
+    setCodeCopyEnabled(true);
     checkSelectionScope();
   } catch (error) {
     errorNotice(statusId, error);
@@ -308,13 +308,24 @@ for (const [prefix, key, size, loader] of [
     });
   }
 }
-byId("copy-json").addEventListener("click", async () => {
+// Code blocks share the same control contract: a button targets a text-only block.
+const codeCopyButtons = [...document.querySelectorAll("[data-copy-target]")];
+function setCodeCopyEnabled(enabled) {
+  for (const button of codeCopyButtons) button.disabled = !enabled;
+}
+
+async function copyCode(targetId) {
   const evidence = state.evidence;
+  const text = byId(targetId).textContent;
+  if (!text) return;
   try {
-    await navigator.clipboard.writeText(evidence.event_json);
+    await navigator.clipboard.writeText(text);
     if (state.evidence === evidence) notice("evidence-status", "JSON copied.");
   } catch {
     if (state.evidence === evidence) notice("evidence-status", "Copy unavailable: select the JSON directly.", true);
   }
-});
+}
+for (const button of codeCopyButtons) {
+  button.addEventListener("click", () => copyCode(button.dataset.copyTarget));
+}
 loadCases();
