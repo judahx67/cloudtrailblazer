@@ -2,6 +2,9 @@
 
 A local CloudTrail investigation workbench, beginning with the case module.
 
+Agents start with [AGENTS.md](AGENTS.md). See [the current project state](docs/project-state.md)
+for completed milestones, validation and the next increment.
+
 The first milestone imports AWS logs, preserves evidence and queries events. Graphs,
 the web interface and Suzaku detection jobs are subsequent milestones.
 

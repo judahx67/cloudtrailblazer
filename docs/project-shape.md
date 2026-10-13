@@ -23,7 +23,7 @@ The graph is a simplified navigation view of observed activity. It may omit deta
 
 ## Proposed implementation
 
-Use a TypeScript web client (React + Vite), a small local Python process (FastAPI) and DuckDB for case queries. These are candidate choices, not installed dependencies. Python makes the initial subprocess and analytical storage work straightforward; we can revise packaging after measuring import and query costs.
+Python and DuckDB are implemented for the case foundation. A TypeScript web client (React + Vite) and FastAPI HTTP adapter remain candidate choices. Python supports the initial local processing and future subprocess integration; we can revise packaging after measuring import and query costs.
 
 The local process owns imports, decompression, indexing, Suzaku jobs, and graph projection. The browser receives bounded graph results and paginated event rows. No cloud credentials or hosted upload are needed for the first experiment. Run the process on loopback; keep case files on disk and use argument arrays for CLI execution.
 
@@ -37,7 +37,7 @@ fixtures/              fixture manifest and reproducible larger corpus generator
 upstream/suzaku/        inspected upstream checkout, kept unchanged
 ```
 
-Do not make the nested upstream checkout part of the wrapper by accident. When establishing the wrapper repository, explicitly choose a pinned submodule or a separately downloaded binary. Keep the commit and rules revision in each case manifest.
+The wrapper currently ignores the separate upstream checkout and pins fixture revisions and hashes in its fixture manifest. Choose binary distribution or a pinned submodule when implementing detection jobs. Record the engine and rules revisions with each detection run; the current importer does not execute Suzaku.
 
 ## Modules and their interfaces
 
