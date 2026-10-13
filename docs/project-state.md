@@ -1,14 +1,15 @@
 # Project state
 
-Last updated: 2026-10-13. Latest main checkpoint: `292b522`.
-Relationship implementation: `codex/relationships`, submitted for PR review.
+Last updated: 2026-10-13. Latest main checkpoint: `fd88250` (relationship PR #1 merged).
+Current increment: `feature/events-inspector`, submitted for PR review.
 
 ## Current milestone
 
-The case foundation and first relationship backend increment are complete. The user
+The case/relationship foundation and first local Events inspector are complete. The user
 approved the consolidated [graph design](design/graph-workbench.md). Agent guidance
 remains in a local, Git-ignored root `AGENTS.md`. Every coding turn now uses a feature
-branch and separate PR; the owner reviews before instructing a merge.
+branch and separate PR; the owner reviews before instructing a merge. Branch names
+use `feature/`, `fix/`, `docs/`, `cicd/` or another appropriate purpose prefix.
 
 The user pushed the previous state to main. The remote is
 `https://github.com/judahx67/cloudtrailblazer.git`; repository-local credential
@@ -28,37 +29,58 @@ Implemented capabilities:
 - Focus on an identity, filter by time, and page a connection's supporting events.
   Fail explicitly at configured scan/output budgets.
 - Exercise these operations through the development CLI and shared Python modules.
+- Discover published cases and expose read-only HTTP queries for cases, events,
+  identities, relationship graphs and supporting evidence on loopback.
+- Use a real browser Events inspector: case selection, exact UTC bounds, event/source
+  pages, normalized original JSON without decimal rounding, source paths/hashes,
+  keyboard selection, and visible loading/empty/error/stale-evidence states.
+- Serve bundled client assets from the Python wheel, with no frontend build step.
 
-There is no web UI, HTTP adapter, rendered graph or Suzaku detection-job integration
-yet. Python and DuckDB are implemented choices; React/Vite, FastAPI and renderer
-selection remain proposed. See the
-[relationship decision](decisions/0002-relationship-projection.md) for the contract.
+There is no rendered graph or Suzaku detection-job integration yet. Python, DuckDB,
+FastAPI, Uvicorn and the small JavaScript inspector are implemented choices.
+React/Vite and renderer selection remain proposed. See the
+[relationship decision](decisions/0002-relationship-projection.md) and
+[HTTP/inspector decision](decisions/0003-local-events-inspector.md) for the contracts.
 
 ## Validation
 
 Verification on 2026-10-13:
 
-- All 40 tests passed: 21 foundation tests and 19 relationship tests. Coverage includes
-  deduplication/evidence, conflicting IDs, failed imports, decimal preservation,
-  role grouping, reused session names, missing/mismatched issuers, uncertain sessions,
-  account separation, shared IP focus, explicit targets, half-open time ranges,
-  stable IDs, pagination beyond 500 events, empty cases, limits and CLI behavior.
+- All 55 Python tests passed: 21 foundation, 19 relationship and 15 HTTP tests.
+  Existing evidence/identity semantics and new discovery, pagination, exact full-case
+  bounds, decimal text, typed errors, read-only/local policies and assets are checked.
+- All 6 client tests passed, including late/canceled results, late network errors,
+  actionable HTTP errors, exact microsecond scope membership and page labels.
 - Ruff lint and formatting checks passed.
-- The installed CLI imported all 33 pinned Suzaku AWS events and returned 3 observed
-  identities, 9 nodes and 23 connections. The denied DeleteTrail connection opened
-  its AccessDenied event and source reference through connection-events and evidence.
+- The wheel built successfully with all four client assets and no local cases,
+  environments, caches or upstream checkout included.
+- Manual browser verification used all 33 pinned Suzaku AWS events. The denied
+  DeleteTrail event opened its AccessDenied JSON and original source/hash/ordinal.
+  Empty and invalid ranges, stale evidence, Reset, keyboard selection, exact JSON
+  clipboard copying, case switching,
+  56-event/25-occurrence synthetic pagination, and unapplied time edits were checked.
+  Responsive checks at 920px and 430px had no document-width overflow; the narrow
+  event table scrolls horizontally. The browser console showed no errors/warnings.
 
 The upstream fixture test skips when its external checkout is absent; it ran here.
 Tests required normal Windows path access because the sandbox denies strict resolution
 of workspace fixtures. Temporary cases and smoke-test outputs stayed under `.local/`.
 No import/query benchmarks or browser performance measurements have been run.
+The test run emitted one upstream TestClient/HTTPX deprecation warning. HTTPX is a
+development dependency; follow the framework's test-client transition in a later
+dependency maintenance increment. The build warned about the project-local uv cache;
+wheel inspection confirmed it is excluded.
+
+The local preview runs on `http://127.0.0.1:8765`, reading `.local/preview-cases`.
+It includes the pinned sample case and clearly labeled synthetic/empty checks.
+The screenshot is `.local/events-inspector.jpg`; preview data and images are ignored.
 
 The earlier hypothetical UI comparison demonstrated design interactions only. Its
 middle-dot separators and left-edge accents are superseded by the current visual rules.
 
 ## Known limitations and open decisions
 
-- Imports are synchronous and create new cases; case discovery, append/edit, jobs,
+- Imports are synchronous and create new cases; append/edit, jobs,
   Parquet, oversized-input budgets and interrupted-process recovery are deferred.
 - Cases are read-only through the module, not tamper-proof archives. Source copying
   adds disk cost; per-record inserts have not been benchmarked.
@@ -68,19 +90,24 @@ middle-dot separators and left-edge accents are superseded by the current visual
 - Target extraction supports recorded resource ARNs and STS request roleArn only.
   Missing issuers are not enriched from other records; creation time is a weaker
   session discriminator. No AssumeRole response-to-session causal link is inferred.
-- Density grouping, expansion, subgraph navigation, stable layout positions, HTTP
-  and keyboard/browser interactions remain future work under the approved design.
+- The catalog scans manifests per request. Evidence occurrence pages bound response
+  size, while the module still loads all occurrence references internally; a single
+  event's JSON has no size budget. Browser aborts discard stale results without
+  canceling already running backend work.
+- Import is CLI-only. No browser search/action filter, two-handle time slider,
+  density grouping, graph expansion/layout or subgraph navigation exists yet.
 - The wrapper distribution/license decision remains open; upstream Suzaku uses AGPLv3.
 - `AGENTS.md` is ignored now but remains in earlier commits; ignoring does not erase history.
 - No new blocker prevents the next increment.
 
 ## Recommended next increment
 
-After reviewing this PR, add a narrow local HTTP adapter and an Events inspector
-using the tested module interfaces. Establish loading, empty, stale-evidence and
-budget-error states before adding graph rendering. First web delivery uses Identity
-focus and Case overview; Detection focus follows real Suzaku integration. Choose the
-renderer and refine budgets using measured workloads.
+After reviewing this PR, implement the first Identity focus graph slice: searchable
+identity selection, a direct neighborhood, and connection selection opening its
+supporting events in the shared inspector. Measure projection and rendering separately
+before selecting the renderer and refining budgets. Case overview, density groups,
+the time slider and the subgraph window follow as focused increments. Detection focus
+follows real Suzaku integration.
 
 ## Milestone history
 
@@ -91,4 +118,5 @@ renderer and refine budgets using measured workloads.
 | 2026-10-13 | Agent anchor and reporting | Local anchor and project-state document with milestone reporting requirements. |
 | 2026-10-13 | Repository identity | Configured judahx67 and kept AGENTS.md local and ignored. |
 | 2026-10-13 | Graph interview (`292b522`) | Consolidated interaction design; subsequently approved by the user and pushed to main. |
-| 2026-10-13 | Relationship backend (`codex/relationships`) | Identity/session projection, graph/evidence queries, CLI, documented contract and 40 passing tests; PR review. |
+| 2026-10-13 | Relationship backend (`4db6da6`, merged `fd88250`) | Identity/session projection, graph/evidence queries, CLI, contract and 40 passing tests. PR #1 merged; branch renamed to feature/relationships. |
+| 2026-10-13 | Local Events inspector (`feature/events-inspector`) | Read-only HTTP adapter, packaged terminal-style browser inspector, exact scopes and provenance; 55 Python and 6 client tests, browser QA and wheel verification; PR review. |

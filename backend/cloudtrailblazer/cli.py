@@ -29,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
     evidence = commands.add_parser("evidence")
     evidence.add_argument("case_id")
     evidence.add_argument("event_key")
+    server = commands.add_parser("serve")
+    server.add_argument("--port", type=int, default=8765, metavar="PORT")
     for command in ("identities", "graph", "connection-events"):
         query = commands.add_parser(command)
         query.add_argument("case_id")
@@ -47,6 +49,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     store = CaseStore(args.data_dir)
     try:
+        if args.command == "serve":
+            import uvicorn
+
+            from cloudtrailblazer.web import create_app
+
+            if not 1 <= args.port <= 65535:
+                raise ValueError("port must be 1..65535")
+            uvicorn.run(create_app(store), host="127.0.0.1", port=args.port, proxy_headers=False)
+            return 0
         if args.command == "import":
             result = store.import_case(args.paths, name=args.name)
         elif args.command == "inspect":

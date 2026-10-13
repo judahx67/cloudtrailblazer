@@ -7,10 +7,12 @@ See [the current project state](docs/project-state.md) for completed milestones,
 validation and the next increment. Other checkouts should use this README, the
 state document and the accepted decisions; the local anchor is not distributed.
 
-The backend imports AWS logs, preserves evidence and projects relationships. The web
-interface, graph rendering and Suzaku detection jobs are subsequent milestones.
+The backend imports AWS logs, preserves evidence and projects relationships. A local
+Events inspector opens cases and original evidence. Graph rendering and Suzaku
+detection jobs are subsequent milestones.
 
-Each coding increment uses a feature branch and a separate pull request for review.
+Each coding increment uses a purpose-based branch (`feature/`, `fix/`, `docs/`,
+`cicd/`) and a separate pull request for review. Do not use the `codex/` prefix here.
 Keep commit messages simple. Merge only after the owner's review and instruction.
 
 ## Development
@@ -22,7 +24,32 @@ uv sync --locked
 uv run --locked pytest
 uv run --locked ruff check .
 uv run --locked ruff format --check .
+node --test web-tests/client.test.mjs
 ```
+
+Node.js 22+ is needed for client tests only. The bundled browser client has no build
+step; Python runs the application.
+
+## Local web inspector
+
+After importing a case with the CLI:
+
+```powershell
+uv run --locked cloudtrailblazer serve
+```
+
+Open [the local workbench](http://127.0.0.1:8765). Choose a case, select an event and
+inspect its original JSON and source references. Time inputs accept ISO timestamps
+with explicit offsets; Apply updates the range and Reset restores the full case.
+Unapplied edits do not affect paging. Evidence outside the applied range is marked.
+
+Cases default to `.local/cases`. `--data-dir <path>` before `serve` selects another
+root; `serve --port <port>` changes the port. The CLI binds to loopback only. Stop it
+with Ctrl+C. Import remains a CLI operation; the web inspector is read-only.
+No graph renderer, time slider, subgraph window or detection UI is implemented yet.
+See [the HTTP/inspector decision](docs/decisions/0003-local-events-inspector.md).
+
+## Import and query
 
 Use explicit files; the importer does not crawl folders. JSON arrays, CloudTrail
 `Records` envelopes, single events, JSONL batches and their `.gz` variants are supported.
@@ -83,5 +110,5 @@ its detection rules are executed by this milestone.
 
 See [the project proposal](docs/project-shape.md) and
 [the foundation decision](docs/decisions/0001-case-foundation.md).
-The [consolidated graph design](docs/design/graph-workbench.md) records the user-facing
-milestone and the design interview's choices; check its review status before implementation.
+The approved [consolidated graph design](docs/design/graph-workbench.md) records the
+user-facing milestone; its graph interactions are delivered in staged increments.

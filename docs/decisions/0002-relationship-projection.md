@@ -1,6 +1,7 @@
 # 0002: Evidence-backed relationship queries
 
-Implemented on `codex/relationships` for PR review, 2026-10-13.
+Implemented in `4db6da6`, merged through PR #1, 2026-10-13. Branch renamed to
+`feature/relationships`; main's merge checkpoint is `fd88250`.
 
 The approved graph design needs a relationship model before layout and rendering.
 `RelationshipStore` exposes three operations over immutable `CaseStore` data:
@@ -92,3 +93,6 @@ This increment supplies backend graph data and CLI queries. It does not supply H
 graph rendering, service-group expansion, resource pivots, a subgraph window,
 detection focus or performance evidence. The next increment is a narrow local HTTP
 adapter and Events inspector, followed by graph interactions from the approved design.
+
+Follow-up: the HTTP adapter and Events inspector are now implemented in
+[decision 0003](0003-local-events-inspector.md). Graph interactions remain deferred.

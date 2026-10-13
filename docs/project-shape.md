@@ -1,8 +1,9 @@
 # Cloudtrailblazer: initial project shape
 
-Status: architecture proposal with the case foundation implemented on 2026-10-13.
+Status: architecture proposal with case/relationship modules and a local Events
+inspector implemented on 2026-10-13.
 See [decision 0001](decisions/0001-case-foundation.md) for the accepted scope and limits.
-The web UI, relationships and Suzaku job integration are not implemented.
+Graph rendering and Suzaku job integration are not implemented.
 See [the consolidated graph design](design/graph-workbench.md) for interview choices
 and its review status; it supersedes the early interaction proposals below.
 
@@ -25,7 +26,11 @@ The graph is a simplified navigation view of observed activity. It may omit deta
 
 ## Proposed implementation
 
-Python and DuckDB are implemented for the case foundation. A TypeScript web client (React + Vite) and FastAPI HTTP adapter remain candidate choices. Python supports the initial local processing and future subprocess integration; we can revise packaging after measuring import and query costs.
+Python and DuckDB implement case storage and relationship projection. FastAPI and
+Uvicorn serve a small bundled HTML/CSS/JavaScript Events inspector. React/Vite remains
+a candidate for the graph client, with no frontend build pipeline introduced yet.
+Python supports local processing and future subprocess integration; revise packaging
+after measuring import and query costs. See [decision 0003](decisions/0003-local-events-inspector.md).
 
 The local process owns imports, decompression, indexing, Suzaku jobs, and graph projection. The browser receives bounded graph results and paginated event rows. No cloud credentials or hosted upload are needed for the first experiment. Run the process on loopback; keep case files on disk and use argument arrays for CLI execution.
 
