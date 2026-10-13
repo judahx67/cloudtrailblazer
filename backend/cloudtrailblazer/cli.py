@@ -1,4 +1,4 @@
-"""Small development entry point for the case module."""
+"""Development adapter for case and relationship queries."""
 
 import argparse
 import sys
@@ -8,6 +8,7 @@ import duckdb
 import simplejson as json
 
 from cloudtrailblazer.cases import CaseStore
+from cloudtrailblazer.relationships import GraphScope, RelationshipStore
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -28,6 +29,21 @@ def main(argv: list[str] | None = None) -> int:
     evidence = commands.add_parser("evidence")
     evidence.add_argument("case_id")
     evidence.add_argument("event_key")
+    for command in ("identities", "graph", "connection-events"):
+        query = commands.add_parser(command)
+        query.add_argument("case_id")
+        query.add_argument("--start")
+        query.add_argument("--end")
+        query.add_argument("--expand-sessions", action="store_true")
+        if command != "graph":
+            query.add_argument("--limit", type=int, default=100)
+            query.add_argument("--offset", type=int, default=0)
+        if command == "identities":
+            query.add_argument("--search", default="")
+        else:
+            query.add_argument("--identity")
+        if command == "connection-events":
+            query.add_argument("connection_id")
     args = parser.parse_args(argv)
     store = CaseStore(args.data_dir)
     try:
@@ -39,8 +55,32 @@ def main(argv: list[str] | None = None) -> int:
             result = store.events(
                 args.case_id, limit=args.limit, offset=args.offset, start=args.start, end=args.end
             )
-        else:
+        elif args.command == "evidence":
             result = store.evidence(args.case_id, args.event_key)
+        else:
+            relationships = RelationshipStore(store)
+            if args.command == "identities":
+                result = relationships.identities(
+                    args.case_id,
+                    start=args.start,
+                    end=args.end,
+                    expand_sessions=args.expand_sessions,
+                    search=args.search,
+                    limit=args.limit,
+                    offset=args.offset,
+                )
+            else:
+                scope = GraphScope(args.start, args.end, args.identity, args.expand_sessions)
+                if args.command == "graph":
+                    result = relationships.graph(args.case_id, scope)
+                else:
+                    result = relationships.connection_events(
+                        args.case_id,
+                        args.connection_id,
+                        scope,
+                        limit=args.limit,
+                        offset=args.offset,
+                    )
     except (ValueError, OSError, KeyError, duckdb.Error) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
