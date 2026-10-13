@@ -148,6 +148,40 @@ def create_app(cases: CaseStore, *, relationships: RelationshipStore | None = No
     def graph(case_id: str, scope: Scope):
         return _json(relationships.graph(case_id, scope))
 
+    @app.get("/api/cases/{case_id}/grouped-graph")
+    def grouped_graph(case_id: str, scope: Scope):
+        return _json(relationships.grouped_graph(case_id, scope))
+
+    @app.get("/api/cases/{case_id}/groups/{group_id}")
+    def group_page(
+        case_id: str,
+        group_id: str,
+        scope: Scope,
+        search: str = "",
+        limit: PageLimit = 20,
+        offset: PageOffset = 0,
+    ):
+        return _json(
+            relationships.group_page(
+                case_id, group_id, scope, search=search, limit=limit, offset=offset
+            )
+        )
+
+    @app.get("/api/cases/{case_id}/grouped-connections/{connection_id}/events")
+    def grouped_connection_events(
+        case_id: str,
+        connection_id: str,
+        scope: Scope,
+        group: str | None = None,
+        limit: PageLimit = 100,
+        offset: PageOffset = 0,
+    ):
+        return _json(
+            relationships.grouped_connection_events(
+                case_id, connection_id, scope, group_id=group, limit=limit, offset=offset
+            )
+        )
+
     @app.get("/api/cases/{case_id}/connections/{connection_id}/events")
     def connection_events(
         case_id: str,

@@ -1,9 +1,14 @@
 # Project state
 
 Last updated: 2026-10-13. Latest main checkpoint: `4c049d3` (PRs #2 and #3 merged).
-Current increment: `feature/identity-graph`, submitted for PR review against main.
+Current increment: `feature/grouped-neighborhoods`, dependent on `feature/identity-graph`
+(PR #4). Review/merge #4 first, then retarget the dependent PR to main.
 
 ## Current milestone
+
+The next backend slice adds grouped neighborhoods, searchable member graph pages and
+grouped supporting-event pages. The browser still uses the first Identity focus UI;
+group browsing and the in-app window follow in a separate PR. No PR is auto-merged.
 
 The case/relationship foundation, local Events inspector and first Identity focus
 neighborhood are complete. The user
@@ -58,7 +63,7 @@ See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
 
 Verification on 2026-10-13:
 
-- All 56 Python tests passed: 21 foundation, 19 relationship and 16 HTTP tests.
+- All 60 Python tests passed, including four new grouping/HTTP regressions.
   Existing evidence/identity semantics and new discovery, pagination, exact full-case
   bounds, decimal text, typed errors, read-only/local policies and assets are checked.
 - All 10 client tests passed, including late/canceled results, late network errors,
@@ -161,3 +166,4 @@ focus follows real Suzaku integration.
 | 2026-10-13 | Local Events inspector (`8ccefcd`, merged `437cdc0`) | Read-only HTTP adapter, packaged browser inspector, exact scopes and provenance; 55 Python and 6 client tests, browser QA and wheel verification. PR #2 merged. |
 | 2026-10-13 | Light workbench (`5757ac3`, merged `4c049d3`) | Light-only shared tokens, system sans-serif UI, stronger contrast, reusable Copy control and updated agent/design rules. PR #3 merged. |
 | 2026-10-13 | Identity neighborhood (`feature/identity-graph`) | Search/paging, SVG neighborhood, stable positions, full details and scoped supporting events in shared inspector; 56 Python and 10 client tests, browser QA, packaging and initial small-sample measurements. PR review. |
+| 2026-10-13 | Grouped neighborhood backend (`feature/grouped-neighborhoods`) | Stable group/member links, unique counts and bounded member/evidence pages; 60 Python tests and 10 client tests. Dependent PR for review; UI follows separately. |
