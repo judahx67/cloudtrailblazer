@@ -6,6 +6,8 @@ Last updated: 2026-10-13. Latest implementation checkpoint: `20cec7a`.
 
 The local case foundation is complete. Agent guidance and project-manager reporting
 expectations are documented in a local, Git-ignored root `AGENTS.md`.
+The graph-design interview is complete; [the consolidated design](design/graph-workbench.md)
+records the choices and awaits shared-understanding confirmation before implementation.
 The remote is `https://github.com/judahx67/cloudtrailblazer.git`, with `judahx67`
 selected by repository-local Git credential configuration. No push has been performed.
 
@@ -37,10 +39,14 @@ agent environment, tests needed execution outside the sandbox because strict pat
 resolution was denied for workspace files. Test outputs stayed under `.local/`.
 No import/query benchmarks or browser performance measurements have been run.
 
-The repository-configuration increment changes Git settings and documentation only.
-Account availability, repository access, ignored-file behavior, references and the
-Git diff are checked; the foundation test results above are historical, not rerun for
-these changes.
+The current increment records the graph interview and updates design rules; it does
+not change application code. Document references, consistency, Git whitespace and the
+ignored status of the local anchor are checked. Foundation tests were not rerun.
+
+The earlier hypothetical comparison was checked for session expansion, time handles,
+editable bounds, invalid-range errors, evidence selection and responsive widths. It
+does not demonstrate a working product graph or production performance. Its older
+middle-dot separators and left-edge accents are superseded by the new visual rules.
 
 ## Known limitations and open decisions
 
@@ -49,8 +55,9 @@ these changes.
   verification commands are deferred.
 - Cases are read-only through the module, not tamper-proof archives. Copying sources
   adds disk cost; per-record inserts have not been tuned or benchmarked.
-- Identity/session resolution, resource extraction and graph grouping need explicit
-  semantics. Missing fields must not produce inferred targets without supporting evidence.
+- Interaction choices are captured, including entry modes, session grouping, time
+  controls, stable positions and subgraph navigation. Exact identity/session extraction,
+  resource mapping and density thresholds still need a tested implementation contract.
 - The wrapper's distribution/license decision remains open; upstream Suzaku uses AGPLv3.
 - `AGENTS.md` is removed from current tracking but remains in earlier local commits.
   Ignoring a file does not remove its historical contents.
@@ -58,11 +65,12 @@ these changes.
 
 ## Recommended next increment
 
-Define the relationship model using real and synthetic case evidence: stable identity
-and session keys, explicit resource targets, denied outcomes, missing fields and
-supporting-event references. Record the decision and acceptance examples before
-building graph projection. Then expose a narrow local HTTP interface and an Events
-inspector. Renderer selection follows measured graph workloads.
+Confirm the consolidated design captures the shared understanding. Then define and
+implement the relationship module with stable identity/session keys, explicit resource
+targets, denied outcomes, missing-field behavior and supporting-event references.
+Follow with a narrow local HTTP adapter and Events inspector, then graph rendering and
+subgraph navigation. First web delivery includes Identity focus and Case overview;
+Detection focus follows real Suzaku integration. Renderer selection follows measured workloads.
 
 ## Milestone history
 
@@ -72,3 +80,4 @@ inspector. Renderer selection follows measured graph workloads.
 | 2026-10-13 | Case foundation (`20cec7a`) | Durable imports, event queries, evidence retrieval, locked dependencies and 21 passing tests. |
 | 2026-10-13 | Agent anchor and reporting | Root `AGENTS.md`, current-state document and a required milestone reporting format. |
 | 2026-10-13 | Repository identity and local anchor | Configured the judahx67 remote/account preference; kept `AGENTS.md` locally and removed it from tracking. |
+| 2026-10-13 | Graph-design interview | Recorded entry modes, expansion, aggregation, time behavior, subgraph navigation and visual rules; consolidated review pending. |

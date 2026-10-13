@@ -2,7 +2,9 @@
 
 Status: architecture proposal with the case foundation implemented on 2026-10-13.
 See [decision 0001](decisions/0001-case-foundation.md) for the accepted scope and limits.
-The web UI, relationships and Suzaku job integration remain proposed.
+The web UI, relationships and Suzaku job integration are not implemented.
+See [the consolidated graph design](design/graph-workbench.md) for interview choices
+and its review status; it supersedes the early interaction proposals below.
 
 ## Direction
 
@@ -53,9 +55,9 @@ Nodes initially represent identities, role sessions, IP addresses, explicit reso
 
 Connections describe observed activity: IP → acting identity/session (observed source), actor → explicit resource (action), actor → service (when no explicit target is available), and explicit STS role assumption links where supported by the event. Multiple resource targets can produce multiple connections but still represent one event.
 
-Aggregate by source, target, relationship/action family and outcome within the selected time range. Store event count, first/last seen, action names, finding count, maximum severity and evidence references. Keep distinct outcomes available; never turn a denied action into a successful modification.
+Aggregate by source, target, action and outcome within the selected time range. Store event count, first/last seen and evidence references. Finding counts and severity can be added after detection integration. Keep distinct outcomes available; never turn a denied action into a successful modification.
 
-Default graph: bounded overview with account/service groups, a compact count of hidden entities and click-to-expand groups. Selecting an identity opens its immediate neighborhood. Filters and the time range apply before grouping. Suppress repetitive edges visually by grouping, not by discarding the underlying events. Do not create an individual node for every API call.
+Default entry: Identity focus, with Case overview also available in the first web milestone. Detection focus follows later. Clicking selects; explicit Expand adds context. Dense resource sets group by service and open in one movable, resizable subgraph window. Filters and time apply before grouping. Suppress repetitive edges visually by grouping, not by discarding underlying events. Do not create an individual node for every API call.
 
 Start with a Canvas renderer and deterministic layout, evaluated against a WebGL renderer on the same graph payload. Choose the renderer from measured interaction performance. Keep layout off the main UI thread where needed, stop it once settled, and preserve positions during selection/filtering where possible.
 
@@ -63,9 +65,11 @@ Start with a Canvas renderer and deterministic layout, evaluated against a WebGL
 
 - Fixed structure: narrow filter rail, large graph/table workspace, evidence inspector on the right, compact status line below. Graph and Events views share selection and filters.
 - Matte charcoal background, off-white text, muted pastel accents. One-pixel dividers, square controls, monospace labels, no gradients, shadows or decorative animation.
+- Use `:` or `>` instead of repeated middle-dot separators. Highlight all four borders, not a left-edge accent stripe.
 - Color communicates entity type; severity uses a small distinct marker and text. Selection uses an outline so it remains recognizable without color.
 - Compact labels: `Open`, `Graph`, `Events`, `Time`, `Findings`, `Expand`. Use counts rather than explanatory paragraphs. Long identifiers truncate visually but can be inspected and copied in full.
 - Hover/focus reveals a short tooltip. Selected evidence stays in the inspector. Essential state, errors, grouping counts and failed outcomes remain visible without hover.
+- Two time handles and editable bounds filter the main graph, subgraph and evidence together. Preserve surviving node positions. The subgraph uses the shared inspector and breadcrumbs/Back for deeper navigation.
 - Keyboard focus and explicit expand/select controls mirror pointer interactions. Disable motion by default; panning and zooming respond directly to input.
 - No dashboard cards or ornamental statistics. Each visible control must support import, scope, navigation or evidence inspection.
 

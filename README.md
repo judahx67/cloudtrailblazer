@@ -63,3 +63,5 @@ its detection rules are executed by this milestone.
 
 See [the project proposal](docs/project-shape.md) and
 [the foundation decision](docs/decisions/0001-case-foundation.md).
+The [consolidated graph design](docs/design/graph-workbench.md) records the user-facing
+milestone and the design interview's choices; check its review status before implementation.
