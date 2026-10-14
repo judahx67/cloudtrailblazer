@@ -64,6 +64,7 @@ button[aria-pressed="true"] { border-color: var(--accent); background: var(--sel
 .identity-choice { display: flex; flex-direction: column; text-align: left; min-width: 0; }
 .identity-choice span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .identity-choice .muted { font-size: 12px; }
+.identity-progress { padding: 4px 12px 8px; font-size: 12px; border-bottom: 1px solid var(--line); }
 #graph-count { font-size: 12px; }
 .graph-canvas { overflow: auto; max-height: 390px; padding: 0 4px; }
 .graph-canvas svg { display: block; font: 12px "Segoe UI", Arial, sans-serif; }
