@@ -149,6 +149,10 @@ real-log checks from controlled overflow fixtures. Splunk's 4,196-record import 
 247.87ms median while the larger import was active. These are baseline observations,
 not isolated performance guarantees. Import batching and projection costs are now
 measured priorities rather than reasons to increase budgets.
+The validated flaws.cloud 39,207-record member exceeded a 25-minute import budget
+and reached about 2.48 GiB peak process working set. That benchmark was stopped,
+its unpublished staging directory removed and original bytes preserved. No larger
+case graph/browser success is claimed; batch import is needed before repeating it.
 The test run emitted one upstream TestClient/HTTPX deprecation warning. HTTPX is a
 development dependency; follow the framework's test-client transition in a later
 dependency maintenance increment. The build warned about the project-local uv cache;
@@ -189,7 +193,8 @@ accessibility considered in every UI increment.
   time changes can leave empty lanes; a deliberate new focus resets that history.
 - The wrapper distribution/license decision remains open; upstream Suzaku uses AGPLv3.
 - `AGENTS.md` is ignored now but remains in earlier commits; ignoring does not erase history.
-- No new blocker prevents the next increment.
+- The panel work is ready for review. Import cost blocks practical UI validation of
+  the larger corpus until the next performance increment.
 
 ## Recommended next increment
 

@@ -124,3 +124,9 @@ Preparation is opt-in developer tooling, not part of normal tests or the wheel.
 Its offline regression tests use tiny invented records and never fetch the corpora.
 The complete two-million-record flaws corpus is available locally but has not been
 imported or browser-tested. Do not claim million-event performance from this slice.
+The selected 39,207-record member was validated, but its import exceeded a 25-minute
+benchmark budget and reached about 2.48 GiB peak working set. The run was stopped
+without publishing a case; source bytes were preserved. The 4,196-record Splunk case
+was successfully imported and browser-tested. Import batching is needed before the
+larger slice can become a practical recurring UI case. See the
+[check record](layout-and-corpus-checks.md) for measurements and limits.

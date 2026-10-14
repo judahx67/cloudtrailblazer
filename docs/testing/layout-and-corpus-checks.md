@@ -53,6 +53,14 @@ need batching work before expanding the corpus size. Relationship queries also
 recompute their scoped projection. Peak/native memory, import I/O, paint and input
 latency have not been measured. A successful slice does not prove million-event speed.
 
+The flaws.cloud 39,207-record import did not complete within a 25-minute benchmark
+budget and was stopped. Its observed peak Windows working set reached 2,659,614,720
+bytes (about 2.48 GiB, process/native memory included). The original pinned tar and
+gzip member remain intact; only that run's unpublished staging directory was removed.
+No partial case was published. Consequently this slice has no large-case graph or
+browser result yet. Batch import work is the next prerequisite for that validation;
+do not present the prepared corpus as a successfully imported case.
+
 ## Checks
 
 - 64 Python tests, including offline corpus hash/shape/nesting/unsafe-link checks.
