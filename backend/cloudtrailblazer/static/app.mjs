@@ -138,7 +138,7 @@ async function selectCase(item) {
 }
 
 async function loadEvents() {
-  if (state.view === "identity") identityWorkbench.cancel();
+  if (state.view === "identity") identityWorkbench.cancel({ preserveGroup: true });
   disablePager("events");
   notice("events-status", state.view === "identity" ? "Checking time range..." : "Loading events...");
   byId("event-region").setAttribute("aria-busy", "true");
@@ -167,6 +167,7 @@ async function loadEvents() {
     if (error.name !== "AbortError") {
       errorNotice("events-status", error);
       state.scopePending = false;
+      if (state.view === "identity") identityWorkbench.invalidateScope();
       byId("event-region").setAttribute("aria-busy", "false");
       if (state.selected) staleNotice("Scope unavailable: selection not verified");
       byId("workspace-status").textContent = "Time query failed";
@@ -206,6 +207,7 @@ function clearConnection() {
   state.connection = null;
   byId("event-region").setAttribute("aria-busy", "false");
   byId("graph-details").hidden = true;
+  byId("open-group").hidden = true;
   byId("connection-heading").hidden = true;
   if (state.view === "identity") byId("event-section").hidden = true;
 }
@@ -219,21 +221,26 @@ function graphDetails(title, fields, note = "") {
   byId("graph-details").hidden = false;
 }
 
-function selectNode(node) {
+function selectNode(node, context = null) {
   clearConnection();
-  graphDetails(node.label, [["Type", node.kind], ["Locator", node.identifier],
+  graphDetails(node.label, [["Context", context ? `Subgraph: ${context}` : "Identity focus"],
+    ["Type", node.kind], ["Locator", node.identifier],
     ["Account", node.account_id], ["Events", node.event_count], ["First", node.first_seen],
-    ["Last", node.last_seen], ["Sessions", node.session_count],
-    ["Unresolved", node.unresolved_session_event_count]], node.target_unspecified
+    ["Last", node.last_seen], ...(node.kind === "group"
+      ? [["Members", node.member_count], ["Service", node.service], ["Region", node.region]]
+      : [["Sessions", node.session_count], ["Unresolved", node.unresolved_session_event_count]])], node.target_unspecified
     ? "Target unspecified: the event records a service, not an explicit resource."
     : node.kind === "ip" ? "Observed source only: a shared IP does not establish shared identity." : "");
+  byId("open-group").hidden = node.kind !== "group";
 }
 
-function selectConnection(edge, scope) {
-  graphDetails(edge.action, [["Relation", edge.kind === "action" ? "Action" : "Observed source"],
+function selectConnection(edge, scope, context = null) {
+  graphDetails(edge.action, [["Context", context ? `Subgraph: ${context}` : "Identity focus"],
+    ["Relation", edge.kind === "action" ? "Action" : "Observed source"],
     ["From", edge.sourceIdentifier], ["To", edge.targetIdentifier],
     ["Service", edge.service], ["Outcome", edge.outcome === "failed" ? "Failed attempt" : "No error reported"],
-    ["Events", edge.event_count], ["First", edge.first_seen], ["Last", edge.last_seen]],
+    ["Events", edge.event_count], ["First", edge.first_seen], ["Last", edge.last_seen],
+    ...(edge.grouped ? [["Actions", edge.action_count], ["Links", edge.member_connection_count]] : [])],
   edge.outcome === "failed" ? "Failed calls remain attempts." : "No reported error does not prove a resource mutation.");
   state.connection = { edge, scope };
   state.eventOffset = 0;
@@ -254,7 +261,8 @@ async function loadSupportingEvents() {
   const query = new URLSearchParams({ ...Object.fromEntries(Object.entries(scope).filter(([, value]) => value)),
     limit: EVENT_PAGE, offset: state.eventOffset });
   try {
-    const data = await requests.connection.get(`${casePath(`/connections/${encodeURIComponent(edge.id)}/events`)}?${query}`);
+    const collection = edge.grouped ? "grouped-connections" : "connections";
+    const data = await requests.connection.get(`${casePath(`/${collection}/${encodeURIComponent(edge.id)}/events`)}?${query}`);
     renderEventRows(data.items);
     pager("events", state.eventOffset, data.items.length, data.total, EVENT_PAGE, "events");
     notice("events-status", data.total ? "" : "No supporting events in this scope.");
@@ -397,5 +405,6 @@ async function copyCode(targetId) {
 for (const button of codeCopyButtons) {
   button.addEventListener("click", () => copyCode(button.dataset.copyTarget));
 }
-const identityWorkbench = new IdentityWorkbench({ selectNode, selectConnection, clearConnection });
+const identityWorkbench = new IdentityWorkbench({ selectNode, selectConnection, clearConnection,
+  resetInspection: () => { clearConnection(); clearEvidence(); } });
 loadCases();

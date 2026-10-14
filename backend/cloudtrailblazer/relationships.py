@@ -516,7 +516,9 @@ class RelationshipStore:
     ) -> dict:
         self._page(limit, offset)
         projection = self._project(case_id, scope)
-        buckets, _, _ = self._grouped(projection, scope, group_id)
+        buckets, groups, _ = self._grouped(projection, scope)
+        if group_id not in buckets:
+            raise KeyError("Group not found in the selected scope")
         ids = sorted(
             buckets[group_id]["members"],
             key=lambda key: (projection.nodes[key]["label"].casefold(), key),
@@ -533,8 +535,10 @@ class RelationshipStore:
         _, nodes, edges = self._grouped(projection, scope, group_id, set(page))
         return {
             "group_id": group_id,
+            "group": groups[group_id],
             "total": len(ids),
             "member_count": len(buckets[group_id]["members"]),
+            "member_ids": page,
             "graph": self._group_view(case_id, scope, projection, nodes, edges),
         }
 

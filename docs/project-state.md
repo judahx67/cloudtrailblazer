@@ -1,14 +1,17 @@
 # Project state
 
-Last updated: 2026-10-13. Latest main checkpoint: `4c049d3` (PRs #2 and #3 merged).
-Current increment: `feature/grouped-neighborhoods`, dependent on `feature/identity-graph`
-(PR #4). Review/merge #4 first, then retarget the dependent PR to main.
+Last updated: 2026-10-14. Latest main checkpoint: `4c049d3` (PRs #2 and #3 merged).
+Current increment: `feature/subgraph-window`, dependent on `feature/grouped-neighborhoods`
+(PR #5), which depends on `feature/identity-graph` (PR #4, `869f1cd`). Review order:
+#4, then #5 (`5536e74`), then the subgraph-window PR. Retarget each dependent PR to main
+after its prerequisite merges. All remain for owner review; no PR is auto-merged.
 
 ## Current milestone
 
-The next backend slice adds grouped neighborhoods, searchable member graph pages and
-grouped supporting-event pages. The browser still uses the first Identity focus UI;
-group browsing and the in-app window follow in a separate PR. No PR is auto-merged.
+Grouped neighborhoods, searchable member graph pages and grouped supporting events
+are implemented in PR #5. The next dependent PR completes browser fallback and the
+single in-app subgraph window. This increment is ready for review with shared time
+scope, inspector, keyboard controls and responsive containment.
 
 The case/relationship foundation, local Events inspector and first Identity focus
 neighborhood are complete. The user
@@ -49,10 +52,17 @@ Implemented capabilities:
 - Select connections with pointer or Enter/Space and page only their supporting events
   in the exact time/identity scope, then inspect original JSON/provenance. Supporting
   summaries now carry the same stored actor/account/IP/region fields as the Events table.
-- Retain surviving graph positions through time changes. Fail visibly at the prototype
-  50-node / 80-connection view budget; no links are silently omitted.
+- Retain surviving graph positions through time changes. Above the prototype
+  50-node / 80-connection view budget, retry a grouped neighborhood; remaining budget
+  failures stay visible and no returned links are silently omitted.
+- Group targets by service, owner, region and kind; group observed source IPs.
+  Preserve unique event/member counts, reported outcomes and full supporting evidence.
+- Open one non-modal subgraph window with a parent breadcrumb, 20-member paging and
+  explicit search. Inspect child nodes/connections in the common inspector, move/resize
+  with keyboard alternatives and return with Back/Close/Escape. Global time changes
+  refresh the child and reset its paging; changing case/view/focus closes it.
 
-There is no Case overview, dense grouping or Suzaku detection-job integration yet.
+There is no Case overview or Suzaku detection-job integration yet.
 Python, DuckDB, FastAPI, Uvicorn, the small JavaScript inspector and SVG neighborhood
 are implemented choices. React/Vite and larger-view renderer selection remain proposed.
 See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
@@ -61,12 +71,13 @@ See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
 
 ## Validation
 
-Verification on 2026-10-13:
+Latest verification on 2026-10-14 (earlier browser measurements below remain historical):
 
-- All 60 Python tests passed, including four new grouping/HTTP regressions.
+- All 61 Python tests passed, including grouping/HTTP and self-target member regressions.
   Existing evidence/identity semantics and new discovery, pagination, exact full-case
   bounds, decimal text, typed errors, read-only/local policies and assets are checked.
-- All 10 client tests passed, including late/canceled results, late network errors,
+- All 14 client tests passed, including window containment, source group layout,
+  typed projection errors, late/canceled results, late network errors,
   actionable HTTP errors, exact microsecond scope membership, page labels, complete
   directed links, stable surviving layout, explicit view budgets and self-target loops.
 - Ruff lint and formatting checks passed.
@@ -78,7 +89,7 @@ Verification on 2026-10-13:
   overflow with populated evidence. No browser console warnings/errors were recorded.
   These are targeted checks, not a full accessibility audit; screen-reader and browser
   zoom verification remain open.
-- The wheel built successfully with all seven client assets and no local cases,
+- The wheel built successfully with all eight client assets and no local cases,
   environments, caches or upstream checkout included.
 - Manual browser verification used all 33 pinned Suzaku AWS events. The denied
   DeleteTrail event opened its AccessDenied JSON and original source/hash/ordinal.
@@ -94,6 +105,14 @@ Verification on 2026-10-13:
   and supporting evidence had no page overflow at 920px and 430px; the narrow diagram
   scrolls inside its panel. SVG focus rectangles use a visible 3px stroke. No console
   warnings/errors were recorded. Full screen-reader and zoom audits remain open.
+- Group browser QA used a clearly labeled synthetic case with 61 resource targets,
+  two IPs, mixed actions and separate reported outcomes. Verified grouped fallback,
+  ordered member pages/search, exact child connection evidence/copying, source groups,
+  invalid/empty/reset scope states, parent keyboard focus after Escape, Move/Resize
+  Arrow keys, one-window replacement and closure on view changes. At 920px/430px the
+  window remained inside its stage without document-width overflow. Pointer dragging
+  and native corner resizing still need manual QA; the available browser automation
+  exposes semantic keyboard actions. No new console warnings/errors were recorded.
 
 The upstream fixture test skips when its external checkout is absent; it ran here.
 Tests required normal Windows path access because the sandbox denies strict resolution
@@ -103,14 +122,18 @@ Initial small-sample measurements scan the pinned 33 events and project TrailDis
 Five browser runs: HTTP query/decode 16.6–17.4 ms, layout 0–0.2 ms and DOM creation
 0.3–0.5 ms. Paint, input latency, peak memory, import costs and representative larger
 workloads remain unmeasured; these numbers establish no large-case performance claim.
+Current browser diagnostics combine layout and DOM creation as `layoutAndDomMs`;
+query/decode and summary updates remain separate. Re-establish separate layout/render
+instrumentation before using these diagnostics for broader renderer decisions.
 The test run emitted one upstream TestClient/HTTPX deprecation warning. HTTPX is a
 development dependency; follow the framework's test-client transition in a later
 dependency maintenance increment. The build warned about the project-local uv cache;
 wheel inspection confirmed it is excluded.
 
 The local preview runs on `http://127.0.0.1:8765`, reading `.local/preview-cases`.
-It includes the pinned sample case and clearly labeled synthetic/empty/graph-paging checks.
-The current screenshot is `.local/identity-graph.jpg`; preview data and images are ignored.
+It includes the pinned sample case and clearly labeled synthetic/empty/graph-paging/dense
+resource checks. The current screenshot is `.local/subgraph-window.jpg`; preview data
+and images are ignored.
 
 The earlier hypothetical UI comparison demonstrated design interactions only. Its
 middle-dot separators and left-edge accents are superseded by the current visual rules.
@@ -135,9 +158,10 @@ accessibility considered in every UI increment.
   event's JSON has no size budget. Browser aborts discard stale results without
   canceling already running backend work.
 - Import is CLI-only. No event search/action filter, two-handle time slider,
-  density grouping, session expansion controls, graph Expand, pan/zoom, Case overview
-  or subgraph navigation exists yet. Dense neighborhoods can exceed the small prototype
-  view budget even when backend projection succeeds. Positions retained across repeated
+  session expansion controls, graph Expand, pan/zoom or Case overview exists yet.
+  Dense neighborhoods with many service buckets can still exceed the small prototype
+  view budget after grouping. There is one child window, not a nested hierarchy.
+  Positions retained across repeated
   time changes can leave empty lanes; a deliberate new focus resets that history.
 - The wrapper distribution/license decision remains open; upstream Suzaku uses AGPLv3.
 - `AGENTS.md` is ignored now but remains in earlier commits; ignoring does not erase history.
@@ -145,13 +169,12 @@ accessibility considered in every UI increment.
 
 ## Recommended next increment
 
-After reviewing this PR, flesh out dense-neighborhood grouping and browsing so the
-prototype's view limit becomes a navigable resource group. Preserve service/outcome
-semantics, accurate counts and the evidence path; define group selection and paging
-before adding the subgraph window. Benchmark representative larger and skewed workloads
-before selecting the broader renderer or increasing budgets. Session expansion, Case
-overview, the time slider and subgraph window remain focused increments. Detection
-focus follows real Suzaku integration.
+Review the stacked graph/group/window PRs in order. Next, benchmark representative
+larger and skewed workloads, including import/query costs, memory and input latency,
+before selecting the broader renderer or increasing budgets. Use the window review
+to refine navigation before adding session expansion or explicit graph Expand.
+Case overview and the time slider remain focused increments. Detection focus follows
+real Suzaku integration.
 
 ## Milestone history
 
@@ -167,3 +190,4 @@ focus follows real Suzaku integration.
 | 2026-10-13 | Light workbench (`5757ac3`, merged `4c049d3`) | Light-only shared tokens, system sans-serif UI, stronger contrast, reusable Copy control and updated agent/design rules. PR #3 merged. |
 | 2026-10-13 | Identity neighborhood (`feature/identity-graph`) | Search/paging, SVG neighborhood, stable positions, full details and scoped supporting events in shared inspector; 56 Python and 10 client tests, browser QA, packaging and initial small-sample measurements. PR review. |
 | 2026-10-13 | Grouped neighborhood backend (`feature/grouped-neighborhoods`) | Stable group/member links, unique counts and bounded member/evidence pages; 60 Python tests and 10 client tests. Dependent PR for review; UI follows separately. |
+| 2026-10-14 | Subgraph window (`feature/subgraph-window`) | Dense fallback, one member window, shared scope/evidence, ordered paging/search and keyboard movement/resize; 61 Python and 14 client tests, browser QA and eight packaged assets. Dependent PR for review. |

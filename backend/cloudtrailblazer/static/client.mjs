@@ -23,7 +23,11 @@ export class LatestRequest {
       const response = await this.fetcher(url, { signal: controller.signal });
       const data = await response.json();
       this.#assertCurrent(controller);
-      if (!response.ok) throw new Error(data.error?.message || `Request failed: ${response.status}`);
+      if (!response.ok) {
+        const error = new Error(data.error?.message || `Request failed: ${response.status}`);
+        error.status = response.status; error.code = data.error?.code;
+        throw error;
+      }
       return data;
     } catch (error) {
       // Superseded failures must not overwrite a newer view's status either.

@@ -65,6 +65,8 @@ def test_member_pages_search_and_child_links_keep_stable_evidence_ids(dense):
     first = store.group_page(case_id, group["id"], scope, limit=2)
     second = store.group_page(case_id, group["id"], scope, limit=2, offset=2)
     assert first["total"] == second["total"] == 61
+    assert first["group"] == group
+    assert len(first["member_ids"]) == 2
     focus = next(node for node in first["graph"]["nodes"] if node["id"] == scope.identity_id)
     assert focus["event_count"] == first["graph"]["event_count"] == 2
 
@@ -82,6 +84,38 @@ def test_member_pages_search_and_child_links_keep_stable_evidence_ids(dense):
     assert store.group_page(case_id, group["id"], scope, search="absent")["total"] == 0
     with pytest.raises(KeyError):
         store.grouped_connection_events(case_id, filtered["graph"]["connections"][0]["id"], scope)
+
+
+def test_self_target_is_in_member_page_even_when_it_is_the_focus(tmp_path):
+    actor = "arn:aws:iam::123456789012:role/Investigator"
+    source = tmp_path / "self.json"
+    source.write_text(
+        json.dumps(
+            [
+                {
+                    "eventTime": "2024-01-01T00:00:00Z",
+                    "eventSource": "iam.amazonaws.com",
+                    "eventName": "GetUser",
+                    "userIdentity": {"type": "Role", "arn": actor},
+                    "resources": [{"ARN": actor}],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cases = CaseStore(tmp_path / "cases")
+    case_id = cases.import_case([source], name="Self target")["case_id"]
+    store = RelationshipStore(cases)
+    scope = GraphScope(identity_id=store.identities(case_id)["items"][0]["id"])
+    group = next(
+        node for node in store.grouped_graph(case_id, scope)["nodes"] if node["kind"] == "group"
+    )
+    page = store.group_page(case_id, group["id"], scope)
+    assert page["member_ids"] == [scope.identity_id]
+    assert page["total"] == page["group"]["member_count"] == 1
+    assert len(page["graph"]["nodes"]) == 1
+    link = page["graph"]["connections"][0]
+    assert link["source"] == link["target"] == scope.identity_id
 
 
 def test_grouped_routes_validate_scope_and_preserve_time(dense):
