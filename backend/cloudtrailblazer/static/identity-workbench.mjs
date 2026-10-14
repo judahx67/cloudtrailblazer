@@ -2,6 +2,7 @@ import { LatestRequest } from "./client.mjs";
 import { connectionLabel, layoutNeighborhood, renderNeighborhood, VIEW_LIMITS } from "./graph.mjs";
 import { byId, element, notice, pager, disablePager } from "./ui.mjs";
 import { SubgraphWindow } from "./subgraph-window.mjs";
+import { ScrollPages } from "./scroll-pages.mjs";
 
 const PAGE_SIZE = 20;
 
@@ -12,8 +13,12 @@ export class IdentityWorkbench {
     this.requests = { identities: new LatestRequest(), graph: new LatestRequest(), group: new LatestRequest() };
     this.positions = new Map();
     this.identity = null;
-    this.offset = 0;
     this.search = "";
+    this.identityPages = new ScrollPages((offset, limit) => this.requests.identities.get(
+      `${this.path("/identities")}?${this.query({ search: this.search, limit, offset })}`),
+      nodes => this.appendIdentities(nodes), () => this.identityProgress());
+    byId("identity-list").addEventListener("scroll", () => this.moreIdentities());
+    new ResizeObserver(() => this.moreIdentities(false)).observe(byId("identity-list"));
     this.window = new SubgraphWindow(() => this.closeGroup());
     this.groupPositions = new Map(); this.group = null; this.memberOffset = 0; this.memberSearch = "";
     byId("open-group").addEventListener("click", () => this.openGroup(this.selectedGroup));
@@ -29,13 +34,8 @@ export class IdentityWorkbench {
     }
     byId("identity-search-form").addEventListener("submit", event => {
       event.preventDefault(); this.search = byId("identity-search").value.trim();
-      this.offset = 0; this.loadIdentities();
+      this.loadIdentities();
     });
-    for (const [suffix, step] of [["prev", -1], ["next", 1]]) {
-      byId(`identities-${suffix}`).addEventListener("click", () => {
-        this.offset = Math.max(0, this.offset + step * PAGE_SIZE); this.loadIdentities();
-      });
-    }
   }
 
   cancel({ preserveGroup = false } = {}) {
@@ -45,9 +45,11 @@ export class IdentityWorkbench {
     else this.closeGroup(false);
     byId("identity-search").disabled = true;
     byId("identity-search-submit").disabled = true;
-    disablePager("identities");
+    this.identityPages.reset();
+    byId("identity-list").setAttribute("aria-busy", "false");
+    notice("identity-status", "");
     byId("identity-list").replaceChildren();
-    byId("identities-page").textContent = "";
+    byId("identities-count").textContent = "";
     byId("graph-canvas").replaceChildren();
     byId("connection-list").replaceChildren();
     byId("graph-count").textContent = "";
@@ -62,7 +64,7 @@ export class IdentityWorkbench {
       this.identity = null; this.positions.clear(); this.search = "";
       byId("identity-search").value = "";
     }
-    this.caseId = caseId; this.scope = { ...scope }; this.offset = 0; this.memberOffset = 0; this.ready = true;
+    this.caseId = caseId; this.scope = { ...scope }; this.memberOffset = 0; this.ready = true;
     byId("identity-search").disabled = false;
     byId("identity-search-submit").disabled = false;
     notice("graph-status", this.identity ? "Loading neighborhood..." : "Choose an identity.");
@@ -78,35 +80,47 @@ export class IdentityWorkbench {
 
   async loadIdentities() {
     if (!this.ready) return;
-    disablePager("identities");
+    this.requests.identities.cancel(); this.identityPages.reset();
     byId("identity-list").replaceChildren();
-    notice("identity-status", "Loading identities...");
-    try {
-      const data = await this.requests.identities.get(`${this.path("/identities")}?${this.query({
-        search: this.search, limit: PAGE_SIZE, offset: this.offset })}`);
-      for (const node of data.items) {
-        const button = element("button", undefined, "identity-choice");
-        button.dataset.identityId = node.id;
-        button.setAttribute("aria-label", `Focus ${node.label}: ${node.event_count} events: ${node.account_id || "account unknown"}`);
-        button.setAttribute("aria-pressed", String(node.id === this.identity?.id));
-        button.title = `${node.identifier}\nFirst: ${node.first_seen}\nLast: ${node.last_seen}`;
-        const label = element("span", node.label);
-        const detail = element("span", `${node.account_id || "account unknown"}: ${node.event_count} events`, "muted");
-        button.append(label, detail);
-        button.addEventListener("click", () => {
-          this.closeGroup(false);
-          this.identity = node; this.positions.clear(); this.loadGraph();
-          for (const item of byId("identity-list").children) {
-            item.setAttribute("aria-pressed", String(item.dataset.identityId === node.id));
-          }
-          this.callbacks.selectNode(node);
-        });
-        byId("identity-list").append(button);
-      }
-      notice("identity-status", data.total ? "" : "No identities in this search and time range.");
-      pager("identities", this.offset, data.items.length, data.total, PAGE_SIZE, "identities");
-    } catch (error) {
-      if (error.name !== "AbortError") notice("identity-status", error.message, true);
+    byId("identity-list").scrollTop = 0;
+    await this.identityPages.next();
+  }
+
+  moreIdentities(retry = true) {
+    const list = byId("identity-list");
+    if (!this.ready || (!retry && this.identityPages.error)) return;
+    if (list.clientHeight && list.scrollHeight - list.scrollTop - list.clientHeight <= 32) this.identityPages.next();
+  }
+
+  identityProgress() {
+    const { offset, total, loading, error } = this.identityPages;
+    byId("identity-list").setAttribute("aria-busy", String(loading));
+    byId("identities-count").textContent = total === null ? (loading ? "Loading identities..." : "")
+      : `${offset} / ${total} identities${loading ? ": loading..." : ""}`;
+    notice("identity-status", error ? `${error.message} Scroll up, then down to retry.`
+      : total === 0 ? "No identities in this search and time range." : "", Boolean(error));
+    if (!loading && !error) requestAnimationFrame(() => this.moreIdentities(false));
+  }
+
+  appendIdentities(nodes) {
+    for (const node of nodes) {
+      const button = element("button", undefined, "identity-choice");
+      button.dataset.identityId = node.id;
+      button.setAttribute("aria-label", `Focus ${node.label}: ${node.event_count} events: ${node.account_id || "account unknown"}`);
+      button.setAttribute("aria-pressed", String(node.id === this.identity?.id));
+      button.title = `${node.identifier}\nFirst: ${node.first_seen}\nLast: ${node.last_seen}`;
+      const label = element("span", node.label);
+      const detail = element("span", `${node.account_id || "account unknown"}: ${node.event_count} events`, "muted");
+      button.append(label, detail);
+      button.addEventListener("click", () => {
+        this.closeGroup(false);
+        this.identity = node; this.positions.clear(); this.loadGraph();
+        for (const item of byId("identity-list").children) {
+          item.setAttribute("aria-pressed", String(item.dataset.identityId === node.id));
+        }
+        this.callbacks.selectNode(node);
+      });
+      byId("identity-list").append(button);
     }
   }
 

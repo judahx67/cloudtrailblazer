@@ -40,7 +40,8 @@ uv run --locked cloudtrailblazer serve
 ```
 
 Open [the local workbench](http://127.0.0.1:8765). Choose a case, search/select an
-identity and inspect its direct neighborhood. Select a node for its full details, or
+identity and inspect its direct neighborhood. Scroll the identity results to load
+more automatically; there are no identity page buttons. Select a node for its full details, or
 a connection for supporting-event pages; select an event for its original JSON and
 source references. Enter/Space select graph items. Use Events for the full case table.
 Drag the panel dividers to resize cases, investigation and evidence. Arrow keys and
