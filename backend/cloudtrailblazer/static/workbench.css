@@ -74,6 +74,17 @@ button[aria-pressed="true"] { border-color: var(--accent); background: var(--sel
 .graph-legend { padding: 6px 12px; font-size: 12px; }
 .connection-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 12px 12px; }
 .connection-choice { font-size: 12px; text-align: left; }
+.graph-stage { position: relative; min-height: 420px; }
+.subgraph-window { position: absolute; z-index: 2; display: flex; flex-direction: column; overflow: hidden; resize: both; border: 1px solid var(--accent); background: var(--background); min-width: min(320px, calc(100% - 16px)); min-height: 200px; max-width: calc(100% - 16px); max-height: calc(100% - 16px); }
+.subgraph-toolbar, .subgraph-controls { display: flex; align-items: center; gap: 6px; padding: 6px; border-bottom: 1px solid var(--line); }
+.subgraph-toolbar h3 { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.subgraph-controls { flex-wrap: wrap; font-size: 12px; }
+#subgraph-move { cursor: move; touch-action: none; }
+#subgraph-search-form { margin: 6px; }
+.subgraph-content { flex: 1; min-height: 0; overflow: auto; }
+.subgraph-window .graph-canvas { max-height: none; }
+.subgraph-window .identity-list { max-height: 120px; }
+.inspector-control { margin: 0 12px 12px; }
 table { width: 100%; min-width: 480px; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
 th { color: var(--muted); font-weight: 400; position: sticky; top: 0; background: var(--background); text-align: left; z-index: 1; }
 th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }

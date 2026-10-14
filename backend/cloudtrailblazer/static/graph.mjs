@@ -9,7 +9,7 @@ export function connectionLabel(edge) {
 
 export function layoutNeighborhood(graph, positions = new Map()) {
   if (graph.nodes.length > VIEW_LIMITS.nodes || graph.connections.length > VIEW_LIMITS.connections) {
-    throw new Error("View limit exceeded (50 nodes / 80 connections): narrow the time range. Grouping is not available yet.");
+    throw new Error("View limit exceeded (50 nodes / 80 connections): narrow the time range or member search.");
   }
   const focus = graph.nodes.find(node => node.id === graph.scope.identity_id);
   if (!focus && graph.nodes.length) throw new Error("Selected identity is missing from this neighborhood");
@@ -20,7 +20,7 @@ export function layoutNeighborhood(graph, positions = new Map()) {
     return positions.get(id).row;
   };
   const nodes = [...graph.nodes].sort((a, b) => a.id.localeCompare(b.id)).map(node => {
-    const lane = node.kind === "ip" ? "left" : "right";
+    const lane = node.kind === "ip" || node.group_type === "source" ? "left" : "right";
     const isFocus = node.id === focus?.id;
     return { ...node, x: isFocus ? 254 : lane === "left" ? 12 : 496,
       y: isFocus ? 80 : 80 + slot(`node:${node.id}`, lane) * 110 };
@@ -64,9 +64,10 @@ function interactive(group, label, activate) {
 }
 
 export function renderNeighborhood(container, layout, { selectNode, selectConnection }) {
+  const markerId = `${container.id}-arrow`;
   const svg = svgElement("svg", { viewBox: `0 0 ${layout.width} ${layout.height}`,
     width: layout.width, height: layout.height, role: "group", "aria-label": "Observed identity neighborhood" });
-  const marker = svgElement("marker", { id: "graph-arrow", markerWidth: 8, markerHeight: 8,
+  const marker = svgElement("marker", { id: markerId, markerWidth: 8, markerHeight: 8,
     refX: 7, refY: 4, orient: "auto", markerUnits: "userSpaceOnUse" });
   marker.append(svgElement("path", { d: "M0,0 L8,4 L0,8 Z", class: "graph-arrow" }));
   const defs = svgElement("defs"); defs.append(marker); svg.append(defs);
@@ -77,7 +78,7 @@ export function renderNeighborhood(container, layout, { selectNode, selectConnec
     const group = svgElement("g", { class: `graph-edge${edge.outcome === "failed" ? " failed" : ""}`,
       "data-connection-id": edge.id });
     group.append(svgElement("polyline", { points: edge.points, class: "graph-hit" }));
-    group.append(svgElement("polyline", { points: edge.points, "marker-end": "url(#graph-arrow)" }));
+    group.append(svgElement("polyline", { points: edge.points, "marker-end": `url(#${markerId})` }));
     group.append(svgElement("rect", { x: edge.label.x - 18, y: edge.label.y - 14, width: 36, height: 28 }));
     group.append(svgElement("text", { x: edge.label.x, y: edge.label.y + 4, "text-anchor": "middle" },
       `${edge.incoming ? "S" : "A"}${edge.number}`));
@@ -90,7 +91,7 @@ export function renderNeighborhood(container, layout, { selectNode, selectConnec
     const short = node.label.length > 16 ? `${node.label.slice(0, 15)}…` : node.label;
     group.append(svgElement("text", { x: node.x + 8, y: node.y + 23 }, short));
     group.append(svgElement("text", { x: node.x + 8, y: node.y + 43, class: "graph-kind" },
-      node.target_unspecified ? "target unspecified" : node.kind));
+      node.target_unspecified ? "target unspecified" : node.kind === "group" ? `${node.member_kind} group` : node.kind));
     interactive(group, `Inspect ${node.kind}: ${node.identifier}`, () => selectNode(node));
     svg.append(group);
   }

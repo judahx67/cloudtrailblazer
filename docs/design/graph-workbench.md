@@ -4,9 +4,11 @@ Date: 2026-10-13. Status: approved by the user for staged implementation.
 
 This describes intended behavior, not delivered capabilities. The current application
 has case and relationship modules, a CLI, a local Events inspector and an initial
-Identity focus neighborhood. The conversational comparison used hypothetical data.
-Case overview, session expansion, density groups, pan/zoom, Expand, the slider and
-subgraph navigation remain future work. See [the initial renderer decision](../decisions/0004-identity-neighborhood.md).
+Identity focus neighborhood. The dependent graph PRs now add density groups and one
+member subgraph window with shared time scope and evidence. The conversational
+comparison used hypothetical data. Case overview, session expansion controls,
+pan/zoom, Expand and the slider remain future work. See the
+[subgraph decision](../decisions/0006-subgraph-window.md) for delivered behavior and limits.
 
 ## Purpose and audience
 

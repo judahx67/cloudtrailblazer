@@ -50,3 +50,12 @@ test("recorded self-targets have visible loops and empty scopes are valid", () =
   assert.deepEqual(layoutNeighborhood(graph([], [])).nodes, []);
   assert.throws(() => layoutNeighborhood(graph([node("actor")], [edge("bad", "actor", "missing")])), /missing node/);
 });
+
+test("source groups keep the incoming lane while resource groups stay on the target side", () => {
+  const layout = layoutNeighborhood(graph([node("actor", "identity"),
+    { ...node("sources", "group"), group_type: "source" },
+    { ...node("targets", "group"), group_type: "target" }], []));
+  const lookup = new Map(layout.nodes.map(item => [item.id, item]));
+  assert.ok(lookup.get("sources").x < lookup.get("actor").x);
+  assert.ok(lookup.get("targets").x > lookup.get("actor").x);
+});

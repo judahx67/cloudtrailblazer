@@ -267,7 +267,7 @@ class _Projection:
 
 
 class RelationshipStore:
-    """Three operations: graph, identity list and connection-event page.
+    """Raw/grouped views, identity navigation and their supporting-event pages.
 
     Stable IDs do not depend on time/ordering. All queries rebuild from immutable
     case contents; no derived schema or cache is introduced in this first increment.
@@ -372,6 +372,194 @@ class RelationshipStore:
         ]
         nodes.sort(key=lambda node: (node["label"].casefold(), node["id"]))
         return {"total": len(nodes), "items": nodes[offset : offset + limit]}
+
+    def _grouped(
+        self,
+        projection: _Projection,
+        scope: GraphScope,
+        group_id=None,
+        members=None,
+        build_nodes=True,
+    ):
+        """Collapse presentation only; every link keeps its unique underlying event set."""
+        if not scope.identity_id or scope.expand_sessions:
+            raise ValueError("Grouped neighborhoods require one identity with grouped sessions")
+        buckets = {}
+        routes = []
+        member_events = {}
+        for edge in projection.edges.values():
+            incoming = edge["kind"] == "observed_source"
+            member = projection.nodes[edge["source"] if incoming else edge["target"]]
+            parts = (
+                "source" if incoming else "target",
+                None if incoming else edge["service"],
+                None if incoming else member["account_id"],
+                None if incoming else member.get("region"),
+                "ip" if incoming else member["kind"],
+            )
+            key = _id("group", scope.identity_id, *parts)
+            bucket = buckets.setdefault(key, {"parts": parts, "members": set(), "events": set()})
+            bucket["members"].add(member["id"])
+            bucket["events"].update(edge["_events"])
+            routes.append((edge, key, member["id"]))
+            member_events.setdefault((key, member["id"]), set()).update(edge["_events"])
+        if group_id and group_id not in buckets:
+            raise KeyError("Group not found in the selected scope")
+        nodes = {}
+        if scope.identity_id in projection.nodes:
+            nodes[scope.identity_id] = projection.node(scope.identity_id)
+        if group_id and build_nodes:
+            for key in buckets[group_id]["members"] if members is None else members:
+                if key != scope.identity_id:
+                    nodes[key] = projection.node(key, member_events[group_id, key])
+        elif not group_id and build_nodes:
+            for key, bucket in buckets.items():
+                kind, service, account, region, member_kind = bucket["parts"]
+                count = len(bucket["members"])
+                label = "Source IPs" if kind == "source" else service.split(".")[0]
+                nodes[key] = {
+                    **_node("group", label, key=key, label=f"{label}: {count}", account=account),
+                    **projection.stats(bucket["events"]),
+                    "group_type": kind,
+                    "service": service,
+                    "region": region,
+                    "member_kind": member_kind,
+                    "member_count": count,
+                    "target_unspecified": member_kind == "service",
+                }
+        edges = {}
+        for original, bucket, member in routes:
+            if group_id and (bucket != group_id or (members is not None and member not in members)):
+                continue
+            incoming = original["kind"] == "observed_source"
+            endpoint = member if group_id else bucket
+            source, target = (
+                (endpoint, scope.identity_id) if incoming else (scope.identity_id, endpoint)
+            )
+            key = _id(
+                "group_connection",
+                scope.identity_id,
+                group_id,
+                source,
+                target,
+                original["kind"],
+                original["service"],
+                original["outcome"],
+            )
+            edge = edges.setdefault(
+                key,
+                {
+                    "id": key,
+                    "source": source,
+                    "target": target,
+                    "kind": original["kind"],
+                    "service": original["service"],
+                    "outcome": original["outcome"],
+                    "_events": set(),
+                    "_actions": set(),
+                    "member_connection_count": 0,
+                },
+            )
+            edge["_events"].update(original["_events"])
+            edge["_actions"].add(original["action"])
+            edge["member_connection_count"] += 1
+        return buckets, nodes, edges
+
+    def _group_view(self, case_id, scope, projection, nodes, edges):
+        if len(nodes) > self.max_nodes or len(edges) > self.max_edges:
+            raise ProjectionLimitExceeded("Grouped graph budget exceeded; narrow the time range")
+        connections = []
+        for key in sorted(edges):
+            edge = edges[key]
+            actions = edge["_actions"]
+            connections.append(
+                {
+                    **{key: value for key, value in edge.items() if not key.startswith("_")},
+                    **projection.stats(edge["_events"]),
+                    "action": next(iter(actions)) if len(actions) == 1 else "Activity",
+                    "action_count": len(actions),
+                    "grouped": True,
+                }
+            )
+        event_keys = set().union(*(edge["_events"] for edge in edges.values()))
+        if scope.identity_id in nodes:
+            nodes[scope.identity_id] = {
+                **nodes[scope.identity_id],
+                **(
+                    projection.stats(event_keys)
+                    if event_keys
+                    else {"event_count": 0, "first_seen": None, "last_seen": None}
+                ),
+            }
+        return {
+            "schema_version": 1,
+            "case_id": case_id,
+            "scope": {
+                "start": scope.start,
+                "end": scope.end,
+                "identity_id": scope.identity_id,
+                "expand_sessions": False,
+            },
+            "event_count": len(event_keys),
+            "scanned_event_count": projection.scanned,
+            "nodes": [nodes[key] for key in sorted(nodes)],
+            "connections": connections,
+        }
+
+    def grouped_graph(self, case_id: str, scope: GraphScope) -> dict:
+        projection = self._project(case_id, scope)
+        _, nodes, edges = self._grouped(projection, scope)
+        return self._group_view(case_id, scope, projection, nodes, edges)
+
+    def group_page(
+        self, case_id: str, group_id: str, scope: GraphScope, *, search="", limit=20, offset=0
+    ) -> dict:
+        self._page(limit, offset)
+        projection = self._project(case_id, scope)
+        buckets, groups, _ = self._grouped(projection, scope)
+        if group_id not in buckets:
+            raise KeyError("Group not found in the selected scope")
+        ids = sorted(
+            buckets[group_id]["members"],
+            key=lambda key: (projection.nodes[key]["label"].casefold(), key),
+        )
+        ids = [
+            key
+            for key in ids
+            if search.casefold()
+            in (
+                projection.nodes[key]["label"] + " " + projection.nodes[key]["identifier"]
+            ).casefold()
+        ]
+        page = ids[offset : offset + limit]
+        _, nodes, edges = self._grouped(projection, scope, group_id, set(page))
+        return {
+            "group_id": group_id,
+            "group": groups[group_id],
+            "total": len(ids),
+            "member_count": len(buckets[group_id]["members"]),
+            "member_ids": page,
+            "graph": self._group_view(case_id, scope, projection, nodes, edges),
+        }
+
+    def grouped_connection_events(
+        self,
+        case_id: str,
+        connection_id: str,
+        scope: GraphScope,
+        *,
+        group_id=None,
+        limit=100,
+        offset=0,
+    ) -> dict:
+        self._page(limit, offset)
+        projection = self._project(case_id, scope)
+        _, _, edges = self._grouped(projection, scope, group_id, build_nodes=False)
+        if connection_id not in edges:
+            raise KeyError("Grouped connection not found in the selected scope")
+        rows = [projection.events[key] for key in edges[connection_id]["_events"]]
+        rows.sort(key=lambda row: (row["event_time"], row["event_key"]))
+        return {"total": len(rows), "items": rows[offset : offset + limit]}
 
     def connection_events(
         self,
