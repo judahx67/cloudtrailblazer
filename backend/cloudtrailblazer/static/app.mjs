@@ -1,5 +1,6 @@
 import { LatestRequest, evidenceInScope } from "./client.mjs";
 import { IdentityWorkbench } from "./identity-workbench.mjs";
+import { PanelLayout } from "./panel-layout.mjs";
 import { byId, element, notice, pager, disablePager, renderDetails } from "./ui.mjs";
 
 const requests = Object.fromEntries(["cases", "summary", "events", "evidence", "connection"].map(
@@ -407,4 +408,5 @@ for (const button of codeCopyButtons) {
 }
 const identityWorkbench = new IdentityWorkbench({ selectNode, selectConnection, clearConnection,
   resetInspection: () => { clearConnection(); clearEvidence(); } });
+new PanelLayout();
 loadCases();

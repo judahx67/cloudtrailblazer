@@ -1,4 +1,5 @@
 import { byId } from "./ui.mjs";
+import { bindPointerDrag } from "./pointer-drag.mjs";
 
 export function constrainBox(box, stage) {
   const availableWidth = Math.max(1, stage.width - 16);
@@ -18,17 +19,11 @@ export class SubgraphWindow {
     this.panel.addEventListener("keydown", event => {
       if (event.key === "Escape") { event.stopPropagation(); onClose(); }
     });
-    const move = byId("subgraph-move");
-    move.addEventListener("pointerdown", event => {
-      if (event.button !== 0) return;
-      this.drag = { x: event.clientX, y: event.clientY, left: this.left, top: this.top };
-      move.setPointerCapture(event.pointerId);
-    });
-    move.addEventListener("pointermove", event => {
-      if (!this.drag) return;
-      this.place(this.drag.left + event.clientX - this.drag.x, this.drag.top + event.clientY - this.drag.y);
-    });
-    for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) move.addEventListener(type, () => { this.drag = null; });
+    this.cancelDrags = ["subgraph-move", "subgraph-toolbar"].map(id => bindPointerDrag(byId(id), {
+      accepts: event => id === "subgraph-move" || !event.target.closest("button"),
+      start: () => ({ left: this.left, top: this.top }),
+      move: (x, y, origin) => this.place(origin.left + x, origin.top + y),
+    }));
     for (const [id, resize] of [["subgraph-move", false], ["subgraph-resize", true]]) {
       byId(id).addEventListener("keydown", event => {
         const directions = { ArrowLeft: [-16, 0], ArrowRight: [16, 0], ArrowUp: [0, -16], ArrowDown: [0, 16] };
@@ -60,5 +55,5 @@ export class SubgraphWindow {
     }
   }
 
-  hide() { this.panel.hidden = true; this.drag = null; }
+  hide() { for (const cancel of this.cancelDrags) cancel(); this.panel.hidden = true; }
 }

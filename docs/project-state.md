@@ -1,17 +1,18 @@
 # Project state
 
-Last updated: 2026-10-14. Latest main checkpoint: `4c049d3` (PRs #2 and #3 merged).
-Current increment: `feature/subgraph-window`, dependent on `feature/grouped-neighborhoods`
-(PR #5), which depends on `feature/identity-graph` (PR #4, `869f1cd`). Review order:
-#4, then #5 (`5536e74`), then the subgraph-window PR. Retarget each dependent PR to main
-after its prerequisite merges. All remain for owner review; no PR is auto-merged.
+Last updated: 2026-10-14. Latest main checkpoint: `10170b6` (PR #4 merged).
+Current increment: `feature/resizable-panels`. The owner merged #5 into
+`feature/identity-graph` and #6 into `feature/grouped-neighborhoods`; those changes
+were not on main. This branch integrates that already-reviewed work, then adds panel
+resizing, header dragging and pinned recurring test corpora. Its PR targets main.
+No PR is auto-merged.
 
 ## Current milestone
 
-Grouped neighborhoods, searchable member graph pages and grouped supporting events
-are implemented in PR #5. The next dependent PR completes browser fallback and the
-single in-app subgraph window. This increment is ready for review with shared time
-scope, inspector, keyboard controls and responsive containment.
+The grouped neighborhood/window milestones are reviewed. The current increment adds
+resizable case/investigation/evidence panels, a draggable window header and larger
+real-log validation. The exact start/end inputs remain the global time control;
+the draggable timeline is intentionally deferred to its own increment.
 
 The case/relationship foundation, local Events inspector and first Identity focus
 neighborhood are complete. The user
@@ -61,6 +62,14 @@ Implemented capabilities:
   explicit search. Inspect child nodes/connections in the common inspector, move/resize
   with keyboard alternatives and return with Back/Close/Escape. Global time changes
   refresh the child and reset its paging; changing case/view/focus closes it.
+- Resize adjacent panels with captured pointer gestures or accessible separator
+  Arrow/Home/End controls. Responsive modes have independent tab-local sizes and
+  Reset layout. Drag the subgraph header or Move; header buttons do not start dragging.
+- Focus scroll regions directly to use native keyboard scrolling for overflowing
+  cases, identities, event tables, member diagrams and evidence.
+- Prepare two pinned public corpora locally with byte/hash/archive/nesting checks,
+  without replaying attacks, executing accompanying files or following log URLs.
+  See [the corpus guide](testing/cloudtrail-datasets.md) for provenance and commands.
 
 There is no Case overview or Suzaku detection-job integration yet.
 Python, DuckDB, FastAPI, Uvicorn, the small JavaScript inspector and SVG neighborhood
@@ -73,10 +82,12 @@ See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
 
 Latest verification on 2026-10-14 (earlier browser measurements below remain historical):
 
-- All 61 Python tests passed, including grouping/HTTP and self-target member regressions.
+- All 64 Python tests passed, including corpus hash/nesting/archive-link regressions,
+  grouping/HTTP and self-target members.
   Existing evidence/identity semantics and new discovery, pagination, exact full-case
   bounds, decimal text, typed errors, read-only/local policies and assets are checked.
-- All 14 client tests passed, including window containment, source group layout,
+- All 18 client tests passed, including pointer capture/cancellation, header dragging,
+  panel minimum space/reset/responsive modes, window containment, source group layout,
   typed projection errors, late/canceled results, late network errors,
   actionable HTTP errors, exact microsecond scope membership, page labels, complete
   directed links, stable surviving layout, explicit view budgets and self-target loops.
@@ -89,7 +100,7 @@ Latest verification on 2026-10-14 (earlier browser measurements below remain his
   overflow with populated evidence. No browser console warnings/errors were recorded.
   These are targeted checks, not a full accessibility audit; screen-reader and browser
   zoom verification remain open.
-- The wheel built successfully with all eight client assets and no local cases,
+- The wheel built successfully with all ten client assets and no local cases,
   environments, caches or upstream checkout included.
 - Manual browser verification used all 33 pinned Suzaku AWS events. The denied
   DeleteTrail event opened its AccessDenied JSON and original source/hash/ordinal.
@@ -113,6 +124,13 @@ Latest verification on 2026-10-14 (earlier browser measurements below remain his
   window remained inside its stage without document-width overflow. Pointer dragging
   and native corner resizing still need manual QA; the available browser automation
   exposes semantic keyboard actions. No new console warnings/errors were recorded.
+- Latest browser checks exercised the real 4,196-record Splunk case, event paging
+  and independent table scrolling, exact JSON copy, desktop width/tablet height/phone
+  height resizing, and dense member scrolling. A labeled 438-event/120-identity fixture
+  covers long names, identity page boundaries and a 16,669-character JSON record.
+  Hostile markup remained text, with no image elements created. No console warnings
+  or errors were recorded. Native pointer interaction remains a manual check; captured
+  pointer movement/cancellation and header-button exclusion are tested at module boundaries.
 
 The upstream fixture test skips when its external checkout is absent; it ran here.
 Tests required normal Windows path access because the sandbox denies strict resolution
@@ -125,14 +143,20 @@ workloads remain unmeasured; these numbers establish no large-case performance c
 Current browser diagnostics combine layout and DOM creation as `layoutAndDomMs`;
 query/decode and summary updates remain separate. Re-establish separate layout/render
 instrumentation before using these diagnostics for broader renderer decisions.
+The [latest layout/corpus check record](testing/layout-and-corpus-checks.md) separates
+real-log checks from controlled overflow fixtures. Splunk's 4,196-record import took
+111.11 seconds; warm event-page queries had a 13.50ms median and identity queries a
+247.87ms median while the larger import was active. These are baseline observations,
+not isolated performance guarantees. Import batching and projection costs are now
+measured priorities rather than reasons to increase budgets.
 The test run emitted one upstream TestClient/HTTPX deprecation warning. HTTPX is a
 development dependency; follow the framework's test-client transition in a later
 dependency maintenance increment. The build warned about the project-local uv cache;
 wheel inspection confirmed it is excluded.
 
 The local preview runs on `http://127.0.0.1:8765`, reading `.local/preview-cases`.
-It includes the pinned sample case and clearly labeled synthetic/empty/graph-paging/dense
-resource checks. The current screenshot is `.local/subgraph-window.jpg`; preview data
+It includes pinned sample/public corpus cases and clearly labeled synthetic/empty/
+graph-paging/dense/long-value checks. The current screenshot is `.local/resizable-panels.jpg`; preview data
 and images are ignored.
 
 The earlier hypothetical UI comparison demonstrated design interactions only. Its
@@ -169,12 +193,12 @@ accessibility considered in every UI increment.
 
 ## Recommended next increment
 
-Review the stacked graph/group/window PRs in order. Next, benchmark representative
-larger and skewed workloads, including import/query costs, memory and input latency,
-before selecting the broader renderer or increasing budgets. Use the window review
-to refine navigation before adding session expansion or explicit graph Expand.
-Case overview and the time slider remain focused increments. Detection focus follows
-real Suzaku integration.
+Review the panel/layout PR to main, which also integrates the already-reviewed #5/#6
+changes from their former dependency branches. Next, address measured import and
+relationship-query costs before increasing corpus size or graph budgets. Record memory,
+paint and input latency separately before choosing a larger-view renderer. The time
+slider, session expansion and explicit Expand remain focused increments. Detection
+focus follows real Suzaku integration.
 
 ## Milestone history
 
@@ -191,3 +215,4 @@ real Suzaku integration.
 | 2026-10-13 | Identity neighborhood (`feature/identity-graph`) | Search/paging, SVG neighborhood, stable positions, full details and scoped supporting events in shared inspector; 56 Python and 10 client tests, browser QA, packaging and initial small-sample measurements. PR review. |
 | 2026-10-13 | Grouped neighborhood backend (`feature/grouped-neighborhoods`) | Stable group/member links, unique counts and bounded member/evidence pages; 60 Python tests and 10 client tests. Dependent PR for review; UI follows separately. |
 | 2026-10-14 | Subgraph window (`feature/subgraph-window`) | Dense fallback, one member window, shared scope/evidence, ordered paging/search and keyboard movement/resize; 61 Python and 14 client tests, browser QA and eight packaged assets. Dependent PR for review. |
+| 2026-10-14 | Panel resizing and recurring corpora (`feature/resizable-panels`) | Integrates reviewed #5/#6 branches; responsive dividers, header drag and focusable scroll regions, pinned inert public corpora preparation; 64 Python and 18 client tests, browser QA and ten packaged assets. PR to main. |
