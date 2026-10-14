@@ -1,12 +1,12 @@
 # 0010: Quieter workbench presentation
 
-2026-10-14. First pass implemented on `feature/workbench-polish` for visual review.
+2026-10-14. Accepted by the owner; PR #11 merged into main at `e614b93`.
 
 The owner described the current UI as too flat, edgy and expressive for an enterprise
 workbench. The inspected screen gives nearly every item the same outline, creating a
 wireframe hierarchy. Refine that existing screen rather than add decorative panels
 or change its investigation workflow. Neutral white/gray with restrained blue selection
-is the stated first-pass assumption; the owner may still choose the muted-green variant.
+is the owner-selected design baseline, with fewer visible borders.
 
 Separate decorative section lines from functional control boundaries. White workspace
 and evidence surfaces sit beside a pale gray case rail and app header. Inactive case,
@@ -33,4 +33,4 @@ dividers and populated 430px reflow. Copy success feedback was observed, but the
 browser tool's virtual clipboard returned empty and could not verify native clipboard
 readback; the shared copy handler is unchanged. Native gestures and the broader
 screen-reader/zoom audit remain open. Import performance work remains the next
-engineering milestone after this visual review.
+engineering milestone.

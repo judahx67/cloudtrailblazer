@@ -117,8 +117,8 @@ validate on representative workloads. Nested windows are not part of this design
 
 Use simple lines, square controls, matte light surfaces, dark text and muted
 selection fills. The latest owner direction favors a calmer enterprise presentation
-over pronounced terminal styling; the [first polish pass](../decisions/0010-workbench-visual-polish.md)
-uses neutral surfaces and restrained blue for review.
+over pronounced terminal styling; the [accepted polish baseline](../decisions/0010-workbench-visual-polish.md)
+uses neutral white/gray surfaces, subtle blue selection and fewer visible borders.
 The user requires a professional light theme only. Use system
 sans-serif for interface labels and monospace for JSON and technical values. The first
 inspector used Consolas throughout; this direction supersedes that font treatment.
