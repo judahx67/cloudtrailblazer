@@ -94,6 +94,7 @@ about million-event interaction based on a single chunk or a successful unit sui
 path. Without `--download` it validates existing local files; with it, it downloads
 only the two pinned HTTPS objects. Redirects are rejected. Byte/time/hash caps,
 exact tar-member names and regular-file checks, a 64MiB decompressed JSON cap,
+exactly twenty unique files (plus at most one unique parent directory),
 record counts/shapes and nesting limits are verified before producing log files.
 No archive is bulk-extracted and no corpus scripts, attacks or embedded URLs run.
 Hashes pin the first locally acquired flaws archive; the Splunk hash matches its

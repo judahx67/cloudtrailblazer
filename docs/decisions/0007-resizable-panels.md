@@ -19,7 +19,10 @@ restores defaults. No case data or persistent browser storage is changed.
 
 Dividers are keyboard-focusable separators with orientation, current size and size
 limits. Arrow keys adjust by 16px; Home/End use the limits. Pointer dragging captures
-one pointer and clamps the affected panel. Changing responsive mode during a gesture
+one pointer and clamps the affected panel. Arrow directions move the divider in the
+same direction as pointer movement: Right/Down shrink the trailing evidence pane,
+while Left/Up enlarge it. Home/End retain minimum/maximum pane-size semantics.
+Changing responsive mode during a gesture
 discards further movement until release. Keyboard-focusable case/identity/event and
 member-diagram scroll regions permit native keyboard scrolling when content overflows.
 Evidence keeps its own scrolling, and original JSON retains horizontal scrolling.

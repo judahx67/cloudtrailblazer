@@ -26,7 +26,8 @@ export class PanelLayout {
         if (!(event.key in change) && !["Home", "End"].includes(event.key)) return;
         event.preventDefault();
         const [min, max] = this.limits(key);
-        this.set(key, event.key === "Home" ? min : event.key === "End" ? max : this.current[key] + change[event.key]);
+        const delta = (key === "evidence" ? -1 : 1) * (change[event.key] || 0);
+        this.set(key, event.key === "Home" ? min : event.key === "End" ? max : this.current[key] + delta);
       });
     }
     byId("reset-layout").addEventListener("click", () => { this.sizes = {}; this.refresh(); });

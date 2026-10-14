@@ -78,6 +78,24 @@ test("stacked panels resize vertically and responsive modes retain independent s
   window.innerWidth = root.clientWidth = 430; layout.refresh(); assert.equal(layout.current.cases, 216);
 });
 
+for (const width of [1200, 920, 430]) {
+  test(`evidence Arrow keys move the divider like pointer dragging at ${width}px`, t => {
+    const { get } = environment(t, width), layout = new PanelLayout();
+    const handle = get("evidence-divider"), initial = layout.current.evidence;
+    const horizontalMovement = width > 1100;
+    send(handle, "keydown", { key: horizontalMovement ? "ArrowRight" : "ArrowDown" });
+    assert.equal(layout.current.evidence, initial - 16);
+    send(get("reset-layout"), "click");
+    send(handle, "pointerdown");
+    send(handle, "pointermove", horizontalMovement ? {clientX:16} : {clientY:16});
+    send(handle, "pointerup");
+    assert.equal(layout.current.evidence, initial - 16);
+    send(handle, "keydown", { key: horizontalMovement ? "ArrowLeft" : "ArrowUp" });
+    assert.equal(layout.current.evidence, initial);
+    assert.equal(handle.attributes["aria-valuenow"], String(initial));
+  });
+}
+
 test("window header dragging clamps to the tab and closing cancels captured movement", t => {
   const { get } = environment(t, 800);
   window.innerHeight = 600;
