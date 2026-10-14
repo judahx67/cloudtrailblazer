@@ -228,6 +228,7 @@ def test_local_browser_security_and_bundled_assets(tmp_path):
             "subgraph-window.mjs",
             "pointer-drag.mjs",
             "panel-layout.mjs",
+            "scroll-pages.mjs",
         ):
             response = http.get(f"/assets/{path}")
             assert response.status_code == 200

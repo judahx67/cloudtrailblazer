@@ -17,6 +17,7 @@ class Control extends EventTarget {
   focus() {}
   get offsetWidth() { return parseFloat(this.style.width) || this.clientWidth; }
   get offsetHeight() { return parseFloat(this.style.height) || this.clientHeight; }
+  getBoundingClientRect() { return { left: 0, top: 0, right: this.clientWidth, bottom: this.clientHeight }; }
 }
 function send(target, type, fields = {}) {
   const event = new Event(type, { cancelable: true });
@@ -29,9 +30,10 @@ function environment(t, width = 1200) {
   for (const key of ["document", "window", "ResizeObserver"]) {
     const previous = globalThis[key]; t.after(() => { globalThis[key] = previous; });
   }
-  globalThis.document = { getElementById: get, querySelector: () => root };
-  globalThis.window = Object.assign(new EventTarget(), { innerWidth: width });
+  globalThis.document = { getElementById: get, querySelector: () => root, documentElement: root };
+  globalThis.window = Object.assign(new EventTarget(), { innerWidth: width, innerHeight: 850 });
   globalThis.ResizeObserver = class { observe() {} };
+  get("subgraph-window").hidden = true;
   return { get, root };
 }
 
@@ -94,10 +96,10 @@ for (const width of [1200, 920, 430]) {
   });
 }
 
-test("window header dragging clamps to stage and closing cancels captured movement", t => {
-  const { get } = environment(t);
-  Object.assign(get("graph-stage"), { clientWidth: 800, clientHeight: 600 });
-  const view = new SubgraphWindow(() => {}); view.show("actor > group");
+test("window header dragging clamps to the tab and closing cancels captured movement", t => {
+  const { get } = environment(t, 800);
+  window.innerHeight = 600;
+  const view = new SubgraphWindow(() => {}); view.show("actor > group"); view.place(8, 8);
   const header = get("subgraph-toolbar");
   header.closest = () => get("subgraph-close");
   send(header, "pointerdown"); assert.equal(header.captures.size, 0);
@@ -109,4 +111,18 @@ test("window header dragging clamps to stage and closing cancels captured moveme
   assert.equal(view.left + get("subgraph-window").offsetWidth, 792);
   view.hide(); assert.equal(header.captures.size, 0);
   send(header, "pointermove", { clientX: 100 }); assert.equal(get("subgraph-window").hidden, true);
+});
+
+test("window can leave graph boundaries and stays reachable after viewport shrink", t => {
+  const { get, root } = environment(t, 1400);
+  window.innerHeight = 900;
+  get("graph-stage").getBoundingClientRect = () => ({left:180, top:400, right:480, bottom:600});
+  const view = new SubgraphWindow(() => {}); view.show("actor > group");
+  assert.ok(view.left > 480);
+  view.place(100, 20); assert.equal(view.top, 20); assert.equal(view.left, 100);
+  root.clientWidth = window.innerWidth = 430; window.innerHeight = 300;
+  send(window, "resize");
+  assert.equal(get("subgraph-window").offsetWidth, 414);
+  assert.equal(get("subgraph-window").offsetHeight, 284);
+  assert.equal(view.left, 8); assert.equal(view.top, 8);
 });
