@@ -1,42 +1,20 @@
-import { LatestRequest, evidenceInScope, pageLabel } from "./client.mjs";
+import { LatestRequest, evidenceInScope } from "./client.mjs";
+import { IdentityWorkbench } from "./identity-workbench.mjs";
+import { byId, element, notice, pager, disablePager, renderDetails } from "./ui.mjs";
 
-const byId = (id) => document.getElementById(id);
-const requests = Object.fromEntries(["cases", "summary", "events", "evidence"].map(
+const requests = Object.fromEntries(["cases", "summary", "events", "evidence", "connection"].map(
   (name) => [name, new LatestRequest()]));
 const state = {
   caseId: null, summary: null, caseOffset: 0, eventOffset: 0,
   selected: null, evidence: null, sourceOffset: 0, scope: null, scopePending: false, bounds: {},
+  view: "identity", connection: null,
 };
 const CASE_PAGE = 25;
 const EVENT_PAGE = 50;
 const SOURCE_PAGE = 20;
 
-function element(tag, text, className) {
-  const node = document.createElement(tag);
-  if (text !== undefined) node.textContent = text;
-  if (className) node.className = className;
-  return node;
-}
-
-function notice(id, text, error = false) {
-  const node = byId(id);
-  node.textContent = text;
-  node.classList.toggle("error", error);
-}
-
 function errorNotice(id, error) {
   if (error.name !== "AbortError") notice(id, error.message, true);
-}
-
-function pager(prefix, offset, count, total, pageSize, noun) {
-  byId(`${prefix}-page`).textContent = pageLabel(offset, count, total, noun);
-  byId(`${prefix}-prev`).disabled = offset === 0;
-  byId(`${prefix}-next`).disabled = offset + pageSize >= total;
-}
-
-function disablePager(prefix) {
-  byId(`${prefix}-prev`).disabled = true;
-  byId(`${prefix}-next`).disabled = true;
 }
 
 function casePath(suffix = "") {
@@ -74,6 +52,7 @@ function checkSelectionScope() {
 }
 
 function clearEvidence() {
+  requests.evidence.cancel();
   state.selected = null;
   state.evidence = null;
   state.sourceOffset = 0;
@@ -117,7 +96,8 @@ async function loadCases() {
 }
 
 async function selectCase(item) {
-  for (const name of ["summary", "events", "evidence"]) requests[name].cancel();
+  for (const name of ["summary", "events", "evidence", "connection"]) requests[name].cancel();
+  identityWorkbench.cancel();
   state.caseId = item.case_id;
   state.summary = null;
   state.scope = null;
@@ -126,6 +106,7 @@ async function selectCase(item) {
   state.eventOffset = 0;
   clearEvidence();
   timeControls(false);
+  for (const id of ["view-identity", "view-events"]) byId(id).disabled = true;
   disablePager("events");
   byId("event-rows").replaceChildren();
   byId("event-region").setAttribute("aria-busy", "true");
@@ -148,6 +129,7 @@ async function selectCase(item) {
     state.bounds = { ...state.summary.time_range };
     byId("case-count").title = `${state.summary.source_count} sources: ${state.summary.duplicate_count} duplicate occurrences`;
     timeControls(true);
+    for (const id of ["view-identity", "view-events"]) byId(id).disabled = false;
     await loadEvents();
   } catch (error) {
     errorNotice("events-status", error);
@@ -156,8 +138,9 @@ async function selectCase(item) {
 }
 
 async function loadEvents() {
+  if (state.view === "identity") identityWorkbench.cancel();
   disablePager("events");
-  notice("events-status", "Loading events...");
+  notice("events-status", state.view === "identity" ? "Checking time range..." : "Loading events...");
   byId("event-region").setAttribute("aria-busy", "true");
   byId("event-rows").replaceChildren();
   byId("events-page").textContent = "";
@@ -173,33 +156,13 @@ async function loadEvents() {
     const data = await requests.events.get(`${casePath("/events")}?${query}`);
     state.scope = data.scope;
     state.scopePending = false;
-    for (const item of data.items) {
-      const row = element("tr");
-      row.dataset.key = item.event_key;
-      const time = element("td", item.event_time.replace("+00:00", "Z"));
-      time.title = item.event_time;
-      row.append(time);
-      const action = element("button", item.event_name, "event-action");
-      action.title = item.event_source;
-      action.setAttribute("aria-label", `Inspect ${item.event_name} at ${item.event_time}`);
-      action.addEventListener("click", () => selectEvent(item));
-      const actionCell = element("td");
-      actionCell.append(action);
-      const actor = element("td", item.actor_arn || item.account_id || "See JSON", "actor");
-      actor.title = item.actor_arn || item.account_id || "Actor not recorded in summary; inspect JSON";
-      const outcome = element("td", item.outcome === "failed" ? "failed" : "no error", "outcome");
-      if (item.outcome === "failed") outcome.classList.add("warning");
-      outcome.title = item.outcome === "failed" ? "Recorded error: inspect original JSON"
-        : "No error reported; does not prove a resource mutation";
-      row.append(actionCell, actor, outcome);
-      byId("event-rows").append(row);
-    }
-    markSelection();
+    renderEventRows(data.items);
     checkSelectionScope();
     notice("events-status", data.total ? "" : "No activity in this time range.");
     pager("events", state.eventOffset, data.items.length, data.total, EVENT_PAGE, "events");
     byId("event-region").setAttribute("aria-busy", "false");
-    byId("workspace-status").textContent = `Read only: ${data.total} matching events`;
+    byId("workspace-status").textContent = `Read only: ${data.total} case events in range`;
+    if (state.view === "identity") await identityWorkbench.open(state.caseId, state.scope);
   } catch (error) {
     if (error.name !== "AbortError") {
       errorNotice("events-status", error);
@@ -209,6 +172,115 @@ async function loadEvents() {
       byId("workspace-status").textContent = "Time query failed";
     }
   }
+}
+
+function renderEventRows(items) {
+  byId("event-rows").replaceChildren();
+  for (const item of items) {
+    const row = element("tr");
+    row.dataset.key = item.event_key;
+    const time = element("td", item.event_time.replace("+00:00", "Z"));
+    time.title = item.event_time;
+    row.append(time);
+    const action = element("button", item.event_name, "event-action");
+    action.title = item.event_source;
+    action.setAttribute("aria-label", `Inspect ${item.event_name} at ${item.event_time}`);
+    action.addEventListener("click", () => selectEvent(item));
+    const actionCell = element("td");
+    actionCell.append(action);
+    const actor = element("td", item.actor_arn || item.account_id || "See JSON", "actor");
+    actor.title = item.actor_arn || item.account_id || "Actor not recorded in summary; inspect JSON";
+    const outcome = element("td", item.outcome === "failed" ? "failed" : "no error", "outcome");
+    if (item.outcome === "failed") outcome.classList.add("warning");
+    outcome.title = item.outcome === "failed" ? "Recorded error: inspect original JSON"
+      : "No error reported; does not prove a resource mutation";
+    row.append(actionCell, actor, outcome);
+    byId("event-rows").append(row);
+  }
+  markSelection();
+}
+
+function clearConnection() {
+  requests.connection.cancel();
+  if (state.connection) notice("events-status", "");
+  state.connection = null;
+  byId("event-region").setAttribute("aria-busy", "false");
+  byId("graph-details").hidden = true;
+  byId("connection-heading").hidden = true;
+  if (state.view === "identity") byId("event-section").hidden = true;
+}
+
+function graphDetails(title, fields, note = "") {
+  clearEvidence(); markSelection();
+  notice("evidence-status", "");
+  byId("graph-detail-title").textContent = title;
+  renderDetails("graph-detail-fields", fields);
+  byId("graph-detail-note").textContent = note;
+  byId("graph-details").hidden = false;
+}
+
+function selectNode(node) {
+  clearConnection();
+  graphDetails(node.label, [["Type", node.kind], ["Locator", node.identifier],
+    ["Account", node.account_id], ["Events", node.event_count], ["First", node.first_seen],
+    ["Last", node.last_seen], ["Sessions", node.session_count],
+    ["Unresolved", node.unresolved_session_event_count]], node.target_unspecified
+    ? "Target unspecified: the event records a service, not an explicit resource."
+    : node.kind === "ip" ? "Observed source only: a shared IP does not establish shared identity." : "");
+}
+
+function selectConnection(edge, scope) {
+  graphDetails(edge.action, [["Relation", edge.kind === "action" ? "Action" : "Observed source"],
+    ["From", edge.sourceIdentifier], ["To", edge.targetIdentifier],
+    ["Service", edge.service], ["Outcome", edge.outcome === "failed" ? "Failed attempt" : "No error reported"],
+    ["Events", edge.event_count], ["First", edge.first_seen], ["Last", edge.last_seen]],
+  edge.outcome === "failed" ? "Failed calls remain attempts." : "No reported error does not prove a resource mutation.");
+  state.connection = { edge, scope };
+  state.eventOffset = 0;
+  byId("event-section").hidden = false;
+  byId("connection-heading").hidden = false;
+  byId("connection-name").textContent = `${edge.action}: ${edge.event_count}`;
+  loadSupportingEvents();
+}
+
+async function loadSupportingEvents() {
+  if (!state.connection) return;
+  disablePager("events");
+  renderEventRows([]);
+  byId("events-page").textContent = "";
+  byId("event-region").setAttribute("aria-busy", "true");
+  notice("events-status", "Loading supporting events...");
+  const { edge, scope } = state.connection;
+  const query = new URLSearchParams({ ...Object.fromEntries(Object.entries(scope).filter(([, value]) => value)),
+    limit: EVENT_PAGE, offset: state.eventOffset });
+  try {
+    const data = await requests.connection.get(`${casePath(`/connections/${encodeURIComponent(edge.id)}/events`)}?${query}`);
+    renderEventRows(data.items);
+    pager("events", state.eventOffset, data.items.length, data.total, EVENT_PAGE, "events");
+    notice("events-status", data.total ? "" : "No supporting events in this scope.");
+    byId("event-region").setAttribute("aria-busy", "false");
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      errorNotice("events-status", error);
+      byId("event-region").setAttribute("aria-busy", "false");
+    }
+  }
+}
+
+for (const view of ["identity", "events"]) {
+  byId(`view-${view}`).addEventListener("click", () => {
+    if (state.view === view) return;
+    state.view = view;
+    requests.events.cancel();
+    identityWorkbench.cancel();
+    clearEvidence();
+    state.eventOffset = 0;
+    for (const mode of ["identity", "events"]) byId(`view-${mode}`).setAttribute("aria-pressed", String(mode === view));
+    byId("graph-workspace").hidden = view !== "identity";
+    byId("event-section").hidden = view !== "events";
+    byId("view-path").textContent = `local > ${view}`;
+    loadEvents();
+  });
 }
 
 async function selectEvent(item) {
@@ -239,10 +311,7 @@ async function loadEvidence() {
       ["Service", state.selected.event_source], ["Actor", state.selected.actor_arn || "Not in summary"],
       ["Outcome", state.selected.outcome], ["Key", data.event_key],
     ];
-    byId("event-details").replaceChildren();
-    for (const [name, value] of fields) {
-      byId("event-details").append(element("dt", name), element("dd", value));
-    }
+    renderDetails("event-details", fields);
     byId("raw-json").textContent = data.event_json;
     byId("source-count").textContent = `${data.occurrence_count} ${data.occurrence_count === 1 ? "occurrence" : "occurrences"}`;
     byId("source-list").replaceChildren();
@@ -298,7 +367,7 @@ for (const bound of ["start", "end"]) {
 }
 for (const [prefix, key, size, loader] of [
   ["cases", "caseOffset", CASE_PAGE, loadCases],
-  ["events", "eventOffset", EVENT_PAGE, loadEvents],
+  ["events", "eventOffset", EVENT_PAGE, () => state.connection ? loadSupportingEvents() : loadEvents()],
   ["sources", "sourceOffset", SOURCE_PAGE, loadEvidence],
 ]) {
   for (const [suffix, step] of [["prev", -1], ["next", 1]]) {
@@ -328,4 +397,5 @@ async function copyCode(targetId) {
 for (const button of codeCopyButtons) {
   button.addEventListener("click", () => copyCode(button.dataset.copyTarget));
 }
+const identityWorkbench = new IdentityWorkbench({ selectNode, selectConnection, clearConnection });
 loadCases();

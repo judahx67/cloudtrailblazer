@@ -324,14 +324,27 @@ class CaseStore:
         self.inspect(case_id)
         where, values = _time_filter(start, end)
         sql = (
-            "SELECT event_key, event_time, event_id, event_source, event_name, outcome, raw_json "
+            "SELECT event_key, event_time, event_id, event_source, event_name, outcome, "
+            "account_id, actor_arn, source_ip, region, raw_json "
             "FROM events"
         )
         with duckdb.connect(str(self._path(case_id) / "case.duckdb"), read_only=True) as db:
             db.execute("SET TimeZone = 'UTC'")
             result = db.execute(sql + where + " ORDER BY event_time, event_key", values)
             while batch := result.fetchmany(256):
-                for key, time, event_id, service, action, outcome, raw in batch:
+                for (
+                    key,
+                    time,
+                    event_id,
+                    service,
+                    action,
+                    outcome,
+                    account,
+                    actor,
+                    ip,
+                    region,
+                    raw,
+                ) in batch:
                     yield {
                         "event_key": key,
                         "event_time": time.isoformat(),
@@ -339,6 +352,10 @@ class CaseStore:
                         "event_source": service,
                         "event_name": action,
                         "outcome": outcome,
+                        "account_id": account,
+                        "actor_arn": actor,
+                        "source_ip": ip,
+                        "region": region,
                         "event": json.loads(raw, use_decimal=True),
                     }
 

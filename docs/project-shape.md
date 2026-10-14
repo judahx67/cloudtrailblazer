@@ -3,7 +3,8 @@
 Status: architecture proposal with case/relationship modules and a local Events
 inspector implemented on 2026-10-13.
 See [decision 0001](decisions/0001-case-foundation.md) for the accepted scope and limits.
-Graph rendering and Suzaku job integration are not implemented.
+An initial Identity focus SVG neighborhood is implemented; Case overview, dense groups
+and Suzaku job integration remain future work.
 See [the consolidated graph design](design/graph-workbench.md) for interview choices
 and its review status; it supersedes the early interaction proposals below.
 
@@ -28,7 +29,8 @@ The graph is a simplified navigation view of observed activity. It may omit deta
 
 Python and DuckDB implement case storage and relationship projection. FastAPI and
 Uvicorn serve a small bundled HTML/CSS/JavaScript Events inspector. React/Vite remains
-a candidate for the graph client, with no frontend build pipeline introduced yet.
+a candidate for a broader client, with no frontend build pipeline introduced yet.
+The bounded Identity focus slice uses a small SVG renderer and shared DOM utilities.
 Python supports local processing and future subprocess integration; revise packaging
 after measuring import and query costs. See [decision 0003](decisions/0003-local-events-inspector.md).
 
@@ -64,7 +66,11 @@ Aggregate by source, target, action and outcome within the selected time range. 
 
 Default entry: Identity focus, with Case overview also available in the first web milestone. Detection focus follows later. Clicking selects; explicit Expand adds context. Dense resource sets group by service and open in one movable, resizable subgraph window. Filters and time apply before grouping. Suppress repetitive edges visually by grouping, not by discarding underlying events. Do not create an individual node for every API call.
 
-Start with a Canvas renderer and deterministic layout, evaluated against a WebGL renderer on the same graph payload. Choose the renderer from measured interaction performance. Keep layout off the main UI thread where needed, stop it once settled, and preserve positions during selection/filtering where possible.
+The initial direct neighborhood uses deterministic SVG layout for a small view and
+native keyboard controls. This supersedes the initial Canvas-first proposal for this
+slice. Canvas/WebGL remain candidates for larger views after representative benchmarks.
+Keep layout off the main UI thread where needed, stop it once settled, and preserve
+surviving positions during filtering. See decision 0004 for the current view limits.
 
 ## Interaction and visual contract
 

@@ -8,8 +8,9 @@ validation and the next increment. Other checkouts should use this README, the
 state document and the accepted decisions; the local anchor is not distributed.
 
 The backend imports AWS logs, preserves evidence and projects relationships. A local
-Events inspector opens cases and original evidence. Graph rendering and Suzaku
-detection jobs are subsequent milestones.
+Events inspector opens cases and original evidence. Identity focus renders a direct
+observed neighborhood and opens connection-specific event pages in the shared inspector.
+Case overview, dense grouping and Suzaku detection jobs are subsequent milestones.
 
 Each coding increment uses a purpose-based branch (`feature/`, `fix/`, `docs/`,
 `cicd/`) and a separate pull request for review. Do not use the `codex/` prefix here.
@@ -24,7 +25,7 @@ uv sync --locked
 uv run --locked pytest
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-node --test web-tests/client.test.mjs
+node --test web-tests/*.test.mjs
 ```
 
 Node.js 22+ is needed for client tests only. The bundled browser client has no build
@@ -38,16 +39,21 @@ After importing a case with the CLI:
 uv run --locked cloudtrailblazer serve
 ```
 
-Open [the local workbench](http://127.0.0.1:8765). Choose a case, select an event and
-inspect its original JSON and source references. Time inputs accept ISO timestamps
+Open [the local workbench](http://127.0.0.1:8765). Choose a case, search/select an
+identity and inspect its direct neighborhood. Select a node for its full details, or
+a connection for supporting-event pages; select an event for its original JSON and
+source references. Enter/Space select graph items. Use Events for the full case table.
+Time inputs accept ISO timestamps
 with explicit offsets; Apply updates the range and Reset restores the full case.
 Unapplied edits do not affect paging. Evidence outside the applied range is marked.
 
 Cases default to `.local/cases`. `--data-dir <path>` before `serve` selects another
 root; `serve --port <port>` changes the port. The CLI binds to loopback only. Stop it
 with Ctrl+C. Import remains a CLI operation; the web inspector is read-only.
-No graph renderer, time slider, subgraph window or detection UI is implemented yet.
-See [the HTTP/inspector decision](docs/decisions/0003-local-events-inspector.md).
+The SVG neighborhood currently allows 50 nodes and 80 connections, with explicit
+errors above either limit. No links are silently dropped. Narrow time to reduce a
+view; grouping, session expansion, pan/zoom, the slider, subgraph window and detection
+UI remain future work. See the [identity graph decision](docs/decisions/0004-identity-neighborhood.md).
 
 ## Import and query
 
@@ -80,7 +86,7 @@ Recorded role issuers group sessions by default; `--expand-sessions` reveals the
 Unknown targets become service nodes marked `target_unspecified`. Failed attempts
 remain separate from calls with no reported error. Queries fail explicitly if scan
 or graph budgets are exceeded; narrow the time range or graph identity focus.
-This is backend data, not a rendered graph. See the
+These commands return backend data; the web workbench renders Identity focus. See the
 [relationship contract](docs/decisions/0002-relationship-projection.md) for resolution
 rules, budgets and limitations.
 

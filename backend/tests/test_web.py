@@ -99,6 +99,36 @@ def test_relationship_endpoints_scope_and_budget_errors(case):
         assert response.json()["error"]["code"] == "projection_limit"
 
 
+def test_focused_connection_keeps_identity_time_and_duplicate_semantics(case):
+    store, _, event = case
+    outside = {**event, "eventTime": "2024-08-18T13:06:25Z", "eventID": "outside"}
+    peer = {
+        **event,
+        "eventID": "peer",
+        "userIdentity": {**event["userIdentity"], "arn": "arn:aws:iam::123456789012:user/bob"},
+    }
+    source = store.root.parent / "focused.json"
+    source.write_text(json.dumps([event, event, outside, peer]), encoding="utf-8")
+    case_id = store.import_case([source], name="Focused connection")["case_id"]
+    with client(store) as http:
+        identities = http.get(f"/api/cases/{case_id}/identities").json()["items"]
+        alice = next(node for node in identities if node["label"] == "alice")
+        scope = {"identity": alice["id"], "end": "2024-08-18T13:06:25Z"}
+        graph = http.get(f"/api/cases/{case_id}/graph", params=scope).json()
+        assert graph["event_count"] == 1
+        assert not any(node["label"] == "bob" for node in graph["nodes"])
+        summaries = http.get(f"/api/cases/{case_id}/events").json()["items"]
+        original = next(row for row in summaries if row["event_id"] == "one")
+        for edge in graph["connections"]:
+            page = http.get(
+                f"/api/cases/{case_id}/connections/{edge['id']}/events", params=scope
+            ).json()
+            assert page["total"] == 1
+            assert page["items"][0]["event_id"] == "one"
+            assert page["items"][0]["event_time"] == "2024-08-18T13:05:25.123456+00:00"
+            assert page["items"][0] == original
+
+
 @pytest.mark.parametrize("query", [{"limit": 0}, {"limit": 501}, {"offset": -1}, {"limit": "bad"}])
 def test_invalid_pagination(case, query):
     store, case_id, _ = case
@@ -188,7 +218,14 @@ def test_local_browser_security_and_bundled_assets(tmp_path):
         assert "Evidence inspector" in page.text
         assert page.headers["cache-control"] == "no-store"
         assert "script-src 'self'" in page.headers["content-security-policy"]
-        for path in ("workbench.css", "app.mjs", "client.mjs"):
+        for path in (
+            "workbench.css",
+            "app.mjs",
+            "client.mjs",
+            "graph.mjs",
+            "identity-workbench.mjs",
+            "ui.mjs",
+        ):
             response = http.get(f"/assets/{path}")
             assert response.status_code == 200
             assert (
