@@ -43,6 +43,9 @@ Open [the local workbench](http://127.0.0.1:8765). Choose a case, search/select 
 identity and inspect its direct neighborhood. Select a node for its full details, or
 a connection for supporting-event pages; select an event for its original JSON and
 source references. Enter/Space select graph items. Use Events for the full case table.
+Drag the panel dividers to resize cases, investigation and evidence. Arrow keys and
+Home/End resize focused dividers; Reset layout restores defaults. On narrower screens,
+panels stack and the dividers adjust height. Scroll regions also accept keyboard focus.
 Time inputs accept ISO timestamps
 with explicit offsets; Apply updates the range and Reset restores the full case.
 Unapplied edits do not affect paging. Evidence outside the applied range is marked.
@@ -50,10 +53,21 @@ Unapplied edits do not affect paging. Evidence outside the applied range is mark
 Cases default to `.local/cases`. `--data-dir <path>` before `serve` selects another
 root; `serve --port <port>` changes the port. The CLI binds to loopback only. Stop it
 with Ctrl+C. Import remains a CLI operation; the web inspector is read-only.
-The SVG neighborhood currently allows 50 nodes and 80 connections, with explicit
-errors above either limit. No links are silently dropped. Narrow time to reduce a
-view; grouping, session expansion, pan/zoom, the slider, subgraph window and detection
-UI remain future work. See the [identity graph decision](docs/decisions/0004-identity-neighborhood.md).
+The SVG neighborhood allows 50 nodes and 80 connections. Dense views automatically
+try service/resource and source-IP groups. Select a group, then Open group in the
+inspector to browse its members in one in-app window. Search or page 20 members at
+a time; member connections use the same supporting-event inspector and applied time
+range. Back, Close or Escape return to the parent. Drag the window header or Move,
+or use Move's Arrow keys;
+resize from the lower-right corner or with the Resize button's Arrow keys.
+Grouping preserves unique counts and separates failed attempts from calls with no
+reported error. Mixed action names become Activity; inspect its supporting events
+for the full actions. Many group buckets/services can still exceed budgets: narrow
+time or member search when a visible limit error remains. No links are silently dropped.
+Session expansion controls, pan/zoom, the slider and detection UI remain future work.
+See the [grouping contract](docs/decisions/0005-grouped-neighborhoods.md) and
+[subgraph interaction](docs/decisions/0006-subgraph-window.md).
+For recurring larger local tests, see the [corpus guide](docs/testing/cloudtrail-datasets.md).
 
 ## Import and query
 

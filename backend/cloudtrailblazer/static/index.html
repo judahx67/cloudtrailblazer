@@ -10,14 +10,15 @@
   <script type="module" src="/assets/app.mjs"></script>
 </head>
 <body>
-  <header class="app-header"><h1>Cloudtrailblazer</h1><span class="muted" id="view-path">local &gt; identity</span></header>
+  <header class="app-header"><h1>Cloudtrailblazer</h1><button id="reset-layout" title="Restore panel sizes">Reset layout</button><span class="muted" id="view-path">local &gt; identity</span></header>
   <div class="workbench">
     <aside class="cases panel" aria-label="Case browser">
       <div class="panel-heading"><h2>Cases</h2><button id="refresh-cases" title="Reload imported cases">Refresh</button></div>
       <p id="case-status" class="notice" role="status">Loading cases...</p>
-      <div id="case-list" class="case-list"></div>
+      <div id="case-list" class="case-list" tabindex="0" role="region" aria-label="Case results"></div>
       <div class="pager"><button id="cases-prev" disabled aria-label="Previous cases">Prev</button><span id="cases-page" class="muted">0 cases</span><button id="cases-next" disabled aria-label="Next cases">Next</button></div>
     </aside>
+    <div id="cases-divider" class="panel-divider" role="separator" tabindex="0" aria-label="Resize case browser" aria-controls="case-list" title="Drag or use Arrow keys; Home/End use size limits"></div>
     <main class="events panel" aria-label="Investigation workspace">
       <div class="panel-heading"><h2 id="case-name">Investigation</h2><span id="case-count" class="muted"></span></div>
       <div class="view-switch" role="group" aria-label="Investigation view"><button id="view-identity" aria-pressed="true" disabled>Identity focus</button><button id="view-events" aria-pressed="false" disabled>Events</button></div>
@@ -32,27 +33,38 @@
       <section id="graph-workspace" aria-label="Identity focus workspace">
         <form id="identity-search-form" class="identity-search-form"><label for="identity-search">Identity search</label><div class="search-controls"><input id="identity-search" type="search" placeholder="Name, ARN or account" disabled><button id="identity-search-submit" disabled>Search</button></div></form>
         <p id="identity-status" class="notice" role="status"></p>
-        <div id="identity-list" class="identity-list"></div>
+        <div id="identity-list" class="identity-list" tabindex="0" role="region" aria-label="Identity results"></div>
         <div class="pager"><button id="identities-prev" aria-label="Previous identities" disabled>Prev</button><span id="identities-page" class="muted"></span><button id="identities-next" aria-label="Next identities" disabled>Next</button></div>
         <div class="panel-heading"><h3>Neighborhood</h3><span id="graph-count" class="muted"></span></div>
         <p id="graph-status" class="notice" role="status">Choose a case.</p>
-        <div id="graph-canvas" class="graph-canvas"></div>
+        <div id="graph-stage" class="graph-stage">
+          <div id="graph-canvas" class="graph-canvas"></div>
+          <section id="subgraph-window" class="subgraph-window" aria-label="Subgraph window" hidden>
+            <div id="subgraph-toolbar" class="subgraph-toolbar" title="Drag the header to move this window"><button id="subgraph-back" title="Return to the main graph">Back</button><h3 id="subgraph-title"></h3><button id="subgraph-close">Close</button></div>
+            <div class="subgraph-controls"><button id="subgraph-move" aria-label="Move subgraph window" title="Drag or use Arrow keys">Move</button><button id="subgraph-resize" aria-label="Resize subgraph window" title="Use Arrow keys; or drag the lower-right corner">Resize</button><span id="subgraph-count" class="muted"></span></div>
+            <form id="subgraph-search-form" class="search-controls"><label class="sr-only" for="subgraph-search">Group member search</label><input id="subgraph-search" type="search" placeholder="Member name or locator"><button id="subgraph-search-submit">Search</button></form>
+            <p id="subgraph-status" class="notice" role="status"></p>
+            <div class="subgraph-content" tabindex="0" role="region" aria-label="Group member diagram"><div id="subgraph-members" class="identity-list"></div><div id="subgraph-canvas" class="graph-canvas"></div><div id="subgraph-connections" class="connection-list" role="group" aria-label="Subgraph connections"></div></div>
+            <div class="pager"><button id="members-prev" aria-label="Previous group members" disabled>Prev</button><span id="members-page" class="muted"></span><button id="members-next" aria-label="Next group members" disabled>Next</button></div>
+          </section>
+        </div>
         <p class="graph-legend muted">S: observed source &gt; identity. A: identity &gt; target. Failed attempts: dashed.</p>
         <div id="connection-list" class="connection-list" role="group" aria-label="Observed connections"></div>
       </section>
       <section id="event-section" class="event-section" aria-label="Event list" hidden>
       <div id="connection-heading" class="panel-heading" hidden><h3>Supporting events</h3><span id="connection-name" class="muted"></span></div>
-      <div class="table-wrap" id="event-region" aria-busy="false">
+      <div class="table-wrap" id="event-region" aria-busy="false" tabindex="0" role="region" aria-label="Event results">
         <table><caption class="sr-only">CloudTrail events in the applied time range</caption><thead><tr><th scope="col">Time: UTC</th><th scope="col">Action</th><th scope="col">Actor</th><th scope="col">Outcome</th></tr></thead><tbody id="event-rows"></tbody></table>
       </div>
       <div class="pager"><button id="events-prev" disabled aria-label="Previous events">Prev</button><span id="events-page" class="muted">0 events</span><button id="events-next" disabled aria-label="Next events">Next</button></div>
       </section>
     </main>
-    <aside class="inspector panel" aria-label="Evidence inspector">
+    <div id="evidence-divider" class="panel-divider" role="separator" tabindex="0" aria-label="Resize evidence inspector" aria-controls="evidence-content" title="Drag or use Arrow keys; Home/End use size limits"></div>
+    <aside class="inspector panel" aria-label="Evidence inspector" tabindex="0">
       <div class="panel-heading"><h2>Evidence</h2><button id="copy-json" data-copy-target="raw-json" disabled>Copy JSON</button></div>
       <p id="evidence-status" class="notice" role="status">Select an event.</p>
       <p id="stale-evidence" class="notice warning" hidden></p>
-      <div id="graph-details" hidden><h3 id="graph-detail-title"></h3><dl id="graph-detail-fields" class="event-details"></dl><p id="graph-detail-note" class="notice"></p></div>
+      <div id="graph-details" hidden><h3 id="graph-detail-title"></h3><dl id="graph-detail-fields" class="event-details"></dl><p id="graph-detail-note" class="notice"></p><button id="open-group" class="inspector-control" hidden>Open group</button></div>
       <div id="evidence-content" hidden>
         <dl id="event-details" class="event-details"></dl>
         <div class="code-block">
