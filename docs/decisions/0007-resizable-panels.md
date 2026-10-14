@@ -1,6 +1,8 @@
 # 0007: Resize the existing workbench panels
 
 2026-10-14. Implemented on `feature/resizable-panels`.
+Window placement is subsequently expanded to the full visible tab in
+[decision 0009](0009-tab-wide-subgraph.md).
 
 The task is to give more space to long identity names, large event tables or original
 evidence while keeping navigation usable. Keep the existing light workbench and its

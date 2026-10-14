@@ -59,7 +59,7 @@ try service/resource and source-IP groups. Select a group, then Open group in th
 inspector to browse its members in one in-app window. Search or page 20 members at
 a time; member connections use the same supporting-event inspector and applied time
 range. Back, Close or Escape return to the parent. Drag the window header or Move,
-or use Move's Arrow keys;
+or use Move's Arrow keys to place it anywhere in the visible tab;
 resize from the lower-right corner or with the Resize button's Arrow keys.
 Grouping preserves unique counts and separates failed attempts from calls with no
 reported error. Mixed action names become Activity; inspect its supporting events
