@@ -1,7 +1,9 @@
 # Project state
 
 Last updated: 2026-10-14. Latest main checkpoint: `10170b6` (PR #4 merged).
-Current increment: `feature/resizable-panels`. The owner merged #5 into
+Current increment: `feature/tab-wide-subgraph`, dependent on open PR #8 (identity
+scrolling), itself dependent on #7 (panels). Review #7, then retarget #8 to main after
+#7 merges; retarget the window PR to main after #8 merges. The owner merged #5 into
 `feature/identity-graph` and #6 into `feature/grouped-neighborhoods`; those changes
 were not on main. This branch integrates that already-reviewed work, then adds panel
 resizing, header dragging and pinned recurring test corpora. Its PR targets main.
@@ -10,8 +12,10 @@ No PR is auto-merged.
 ## Current milestone
 
 The grouped neighborhood/window milestones are reviewed. The current increment adds
-resizable case/investigation/evidence panels, a draggable window header and larger
-real-log validation. The exact start/end inputs remain the global time control;
+tab-wide subgraph placement and compact graph controls. The preceding identity PR adds
+automatic loading on scroll, replacing browser Prev/Next identity paging.
+The preceding panel PR adds resizing, header dragging and real-log validation.
+The exact start/end inputs remain the global time control;
 the draggable timeline is intentionally deferred to its own increment.
 
 The case/relationship foundation, local Events inspector and first Identity focus
@@ -67,6 +71,12 @@ Implemented capabilities:
   Reset layout. Drag the subgraph header or Move; header buttons do not start dragging.
 - Focus scroll regions directly to use native keyboard scrolling for overflowing
   cases, identities, event tables, member diagrams and evidence.
+- Scroll identity results to append bounded pages automatically, preserving selected
+  rows and graph state. Search/time/case/view changes reset loading and discard stale
+  results. Counts show loaded/total; errors retain rows and can be retried by scrolling.
+- Move the subgraph window anywhere across the visible tab, outside scrolling panels,
+  with viewport clamping and accessible Close. Compact upper controls leave more graph
+  space; identity scrolling remains available in a 120px region.
 - Prepare two pinned public corpora locally with byte/hash/archive/nesting checks,
   without replaying attacks, executing accompanying files or following log URLs.
   See [the corpus guide](testing/cloudtrail-datasets.md) for provenance and commands.
@@ -87,8 +97,9 @@ Latest verification on 2026-10-14 (earlier browser measurements below remain his
   grouping/HTTP and self-target members.
   Existing evidence/identity semantics and new discovery, pagination, exact full-case
   bounds, decimal text, typed errors, read-only/local policies and assets are checked.
-- All 21 client tests passed, including evidence-divider keyboard/pointer direction
-  parity in wide/medium/narrow layouts, pointer capture/cancellation, header dragging,
+- All 26 client tests passed, including tab-wide geometry/viewport shrink, scroll-loader serialization, stale success/error
+  resets, retained page/retry offsets and empty/end states, evidence-divider keyboard/
+  pointer direction parity in wide/medium/narrow layouts, pointer capture/cancellation, header dragging,
   panel minimum space/reset/responsive modes, window containment, source group layout,
   typed projection errors, late/canceled results, late network errors,
   actionable HTTP errors, exact microsecond scope membership, page labels, complete
@@ -102,7 +113,7 @@ Latest verification on 2026-10-14 (earlier browser measurements below remain his
   overflow with populated evidence. No browser console warnings/errors were recorded.
   These are targeted checks, not a full accessibility audit; screen-reader and browser
   zoom verification remain open.
-- The wheel built successfully with all ten client assets and no local cases,
+- The wheel built successfully with all eleven client assets and no local cases,
   environments, caches or upstream checkout included.
 - Manual browser verification used all 33 pinned Suzaku AWS events. The denied
   DeleteTrail event opened its AccessDenied JSON and original source/hash/ordinal.
@@ -133,6 +144,14 @@ Latest verification on 2026-10-14 (earlier browser measurements below remain his
   Hostile markup remained text, with no image elements created. No console warnings
   or errors were recorded. Native pointer interaction remains a manual check; captured
   pointer movement/cancellation and header-button exclusion are tested at module boundaries.
+- Identity scroll QA loaded all 23 and 120 identities without duplicates, selected an
+  appended identity, reset search and empty/global time scopes, filled spare space at
+  2600px and scrolled at 430px without page-width overflow. Prev/Next identity controls
+  are removed. Loaded rows remain in the DOM until reset; virtualization is deferred.
+- Tab-wide window QA verified fixed placement directly under body, movement to (8,8)
+  beyond graph bounds, 430px containment, reachable Close and parent focus after Escape.
+  Upper controls are compacted with existing label sizes and visible focus. Earlier
+  graph-stage containment checks are historical; current bounds are the visible tab.
 
 The upstream fixture test skips when its external checkout is absent; it ran here.
 Tests required normal Windows path access because the sandbox denies strict resolution
@@ -162,7 +181,7 @@ wheel inspection confirmed it is excluded.
 
 The local preview runs on `http://127.0.0.1:8765`, reading `.local/preview-cases`.
 It includes pinned sample/public corpus cases and clearly labeled synthetic/empty/
-graph-paging/dense/long-value checks. The current screenshot is `.local/resizable-panels.jpg`; preview data
+graph-paging/dense/long-value checks. The current screenshot is `.local/tab-wide-subgraph.jpg`; preview data
 and images are ignored.
 
 The earlier hypothetical UI comparison demonstrated design interactions only. Its
@@ -201,7 +220,8 @@ accessibility considered in every UI increment.
 ## Recommended next increment
 
 Review the panel/layout PR to main, which also integrates the already-reviewed #5/#6
-changes from their former dependency branches. Next, address measured import and
+changes from their former dependency branches, then retarget the identity scroll PR
+to main; retarget the tab-wide window PR after #8 merges. Then address measured import and
 relationship-query costs before increasing corpus size or graph budgets. Record memory,
 paint and input latency separately before choosing a larger-view renderer. The time
 slider, session expansion and explicit Expand remain focused increments. Detection
@@ -223,4 +243,6 @@ focus follows real Suzaku integration.
 | 2026-10-13 | Grouped neighborhood backend (`feature/grouped-neighborhoods`) | Stable group/member links, unique counts and bounded member/evidence pages; 60 Python tests and 10 client tests. Dependent PR for review; UI follows separately. |
 | 2026-10-14 | Subgraph window (`feature/subgraph-window`) | Dense fallback, one member window, shared scope/evidence, ordered paging/search and keyboard movement/resize; 61 Python and 14 client tests, browser QA and eight packaged assets. Dependent PR for review. |
 | 2026-10-14 | Panel resizing and recurring corpora (`feature/resizable-panels`) | Integrates reviewed #5/#6 branches; responsive dividers, header drag and focusable scroll regions, pinned inert public corpora preparation; 64 Python and 18 client tests, browser QA and ten packaged assets. PR to main. |
+| 2026-10-14 | Identity scrolling (`feature/scroll-identities`) | Replaces identity Prev/Next with bounded automatic loading, reset/race/error handling and loaded counts; 64 Python and 22 client tests, browser QA and eleven assets. Dependent on #7. |
+| 2026-10-14 | Tab-wide subgraph (`feature/tab-wide-subgraph`) | Body-level fixed window, tab bounds, compact upper controls and 120px identity scroller; 64 Python and 23 client tests, browser QA and eleven assets. Dependent on #8. |
 | 2026-10-14 | PR #7 review fixes | Reject duplicate allowlisted members before payload reads; align evidence-divider arrows with pointer movement. 67 Python and 21 client tests; existing pinned corpora still validate. |

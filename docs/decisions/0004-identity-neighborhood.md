@@ -1,6 +1,8 @@
 # 0004: First Identity focus neighborhood
 
 Implemented on `feature/identity-graph` for PR review, 2026-10-13.
+The later [identity scroll decision](0008-identity-scroll.md) supersedes browser
+Prev/Next identity paging; the bounded API remains unchanged.
 
 The merged local inspector establishes a working evidence path. Add a narrow graph
 slice over the existing relationship API: identity search/paging, one direct

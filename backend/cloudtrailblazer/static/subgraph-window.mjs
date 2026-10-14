@@ -10,10 +10,10 @@ export function constrainBox(box, stage) {
     top: Math.max(8, Math.min(box.top, stage.height - height - 8)) };
 }
 
-// Non-modal, constrained to the graph stage. Arrow keys provide drag/resize alternatives.
+// Non-modal, bounded by the visible tab rather than a scrolling graph panel.
 export class SubgraphWindow {
   constructor(onClose) {
-    this.panel = byId("subgraph-window"); this.stage = byId("graph-stage");
+    this.panel = byId("subgraph-window");
     this.left = 8; this.top = 8;
     for (const id of ["subgraph-close", "subgraph-back"]) byId(id).addEventListener("click", onClose);
     this.panel.addEventListener("keydown", event => {
@@ -35,11 +35,14 @@ export class SubgraphWindow {
       });
     }
     const observer = new ResizeObserver(() => { if (!this.panel.hidden) this.place(this.left, this.top); });
-    observer.observe(this.stage); observer.observe(this.panel);
+    observer.observe(document.documentElement); observer.observe(this.panel);
+    window.addEventListener("resize", () => { if (!this.panel.hidden) this.place(this.left, this.top); });
   }
 
+  bounds() { return { width: document.documentElement.clientWidth, height: window.innerHeight }; }
+
   place(left, top, width = this.panel.offsetWidth, height = this.panel.offsetHeight) {
-    const box = constrainBox({ left, top, width, height }, { width: this.stage.clientWidth, height: this.stage.clientHeight });
+    const box = constrainBox({ left, top, width, height }, this.bounds());
     this.left = box.left; this.top = box.top;
     Object.assign(this.panel.style, { left: `${box.left}px`, top: `${box.top}px`,
       width: `${box.width}px`, height: `${box.height}px` });
@@ -50,7 +53,10 @@ export class SubgraphWindow {
     this.panel.hidden = false;
     byId("subgraph-title").textContent = label;
     if (fresh) {
-      this.place(8, 8, Math.min(510, this.stage.clientWidth - 16), 350);
+      const bounds = this.bounds();
+      // Open beside the graph; subsequent movements may cross every panel.
+      const graph = byId("graph-stage").getBoundingClientRect();
+      this.place(bounds.width - 518, graph.top, Math.min(510, bounds.width - 16), 350);
       byId("subgraph-close").focus();
     }
   }

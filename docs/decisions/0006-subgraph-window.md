@@ -4,6 +4,8 @@
 The owner merged the dependent branches; `feature/resizable-panels` carries those
 reviewed changes into main. Header dragging and panel dividers are described in
 [the resize decision](0007-resizable-panels.md).
+The later [tab-wide placement decision](0009-tab-wide-subgraph.md) supersedes the
+graph-stage bounds described below.
 
 The task is to inspect a dense group's members without losing the parent identity,
 global time range or path back to original evidence. Keep the existing light workbench

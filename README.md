@@ -40,7 +40,8 @@ uv run --locked cloudtrailblazer serve
 ```
 
 Open [the local workbench](http://127.0.0.1:8765). Choose a case, search/select an
-identity and inspect its direct neighborhood. Select a node for its full details, or
+identity and inspect its direct neighborhood. Scroll the identity results to load
+more automatically; there are no identity page buttons. Select a node for its full details, or
 a connection for supporting-event pages; select an event for its original JSON and
 source references. Enter/Space select graph items. Use Events for the full case table.
 Drag the panel dividers to resize cases, investigation and evidence. Arrow keys and
@@ -58,7 +59,7 @@ try service/resource and source-IP groups. Select a group, then Open group in th
 inspector to browse its members in one in-app window. Search or page 20 members at
 a time; member connections use the same supporting-event inspector and applied time
 range. Back, Close or Escape return to the parent. Drag the window header or Move,
-or use Move's Arrow keys;
+or use Move's Arrow keys to place it anywhere in the visible tab;
 resize from the lower-right corner or with the Resize button's Arrow keys.
 Grouping preserves unique counts and separates failed attempts from calls with no
 reported error. Mixed action names become Activity; inspect its supporting events
