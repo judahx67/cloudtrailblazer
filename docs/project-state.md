@@ -82,11 +82,13 @@ See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
 
 Latest verification on 2026-10-14 (earlier browser measurements below remain historical):
 
-- All 64 Python tests passed, including corpus hash/nesting/archive-link regressions,
+- All 67 Python tests passed, including duplicate archive rejection before extraction,
+  valid optional-directory layouts, corpus hash/nesting/archive-link regressions,
   grouping/HTTP and self-target members.
   Existing evidence/identity semantics and new discovery, pagination, exact full-case
   bounds, decimal text, typed errors, read-only/local policies and assets are checked.
-- All 18 client tests passed, including pointer capture/cancellation, header dragging,
+- All 21 client tests passed, including evidence-divider keyboard/pointer direction
+  parity in wide/medium/narrow layouts, pointer capture/cancellation, header dragging,
   panel minimum space/reset/responsive modes, window containment, source group layout,
   typed projection errors, late/canceled results, late network errors,
   actionable HTTP errors, exact microsecond scope membership, page labels, complete
@@ -221,3 +223,4 @@ focus follows real Suzaku integration.
 | 2026-10-13 | Grouped neighborhood backend (`feature/grouped-neighborhoods`) | Stable group/member links, unique counts and bounded member/evidence pages; 60 Python tests and 10 client tests. Dependent PR for review; UI follows separately. |
 | 2026-10-14 | Subgraph window (`feature/subgraph-window`) | Dense fallback, one member window, shared scope/evidence, ordered paging/search and keyboard movement/resize; 61 Python and 14 client tests, browser QA and eight packaged assets. Dependent PR for review. |
 | 2026-10-14 | Panel resizing and recurring corpora (`feature/resizable-panels`) | Integrates reviewed #5/#6 branches; responsive dividers, header drag and focusable scroll regions, pinned inert public corpora preparation; 64 Python and 18 client tests, browser QA and ten packaged assets. PR to main. |
+| 2026-10-14 | PR #7 review fixes | Reject duplicate allowlisted members before payload reads; align evidence-divider arrows with pointer movement. 67 Python and 21 client tests; existing pinned corpora still validate. |

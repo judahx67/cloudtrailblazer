@@ -98,6 +98,8 @@ def prepare(root, download=False):
         files = [item for item in members if not item.isdir()]
         if (
             len(members) > 21
+            or len(files) != len(allowed)
+            or len({item.name for item in members}) != len(members)
             or {item.name for item in files} != allowed
             or any(not item.isfile() or item.size > 40 * 1024 * 1024 for item in files)
             or any(item.isdir() and item.name != "flaws_cloudtrail_logs" for item in members)
