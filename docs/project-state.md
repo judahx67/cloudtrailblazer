@@ -1,18 +1,18 @@
 # Project state
 
-Last updated: 2026-10-14. Latest main checkpoint: `8cca2bb` (PR #7 merged).
-The owner merged all three UI PRs: #7 into main, #8 into `feature/resizable-panels`
-and #9 into `feature/scroll-identities`. Main therefore contained the panel/corpus
-work and review fixes but not identity scrolling or tab-wide placement.
-Current increment: `feature/integrate-reviewed-ui`, targeting main. It merges the
-already-reviewed #8/#9 code unchanged and consolidates the handoff notes.
+Last updated: 2026-10-14. Latest main checkpoint: `5fa5b55` (PR #10 merged).
+Main now includes all reviewed UI increments and PR #7 fixes. Current increment:
+`feature/workbench-polish`, targeting main. The owner requested a calmer, more
+enterprise-looking presentation; this first visual pass uses neutral surfaces,
+lighter hierarchy and restrained blue selection for review.
 No PR is auto-merged.
 
 ## Current milestone
 
-The UI milestones and PR #7 review fixes are reviewed. The integration branch contains
-resizable panels, automatic identity scrolling, tab-wide subgraph placement and compact
-controls together. No new product behavior is added by this consolidation.
+Resizable panels, automatic identity scrolling, tab-wide subgraph placement and compact
+controls are on main. The current first styling pass separates quiet section lines from
+functional boundaries, removes repetitive inactive list-item frames and clarifies
+surface/type hierarchy. No investigation behavior or backend changes are introduced.
 The exact start/end inputs remain the global time control;
 the draggable timeline is intentionally deferred to its own increment.
 
@@ -75,6 +75,9 @@ Implemented capabilities:
 - Move the subgraph window anywhere across the visible tab, outside scrolling panels,
   with viewport clamping and accessible Close. Compact upper controls leave more graph
   space; identity scrolling remains available in a 120px region.
+- First visual-polish pass: neutral gray case/header surfaces and white workspaces,
+  pale blue full-border selection, quieter inactive navigation/list choices, distinct
+  control-boundary tokens and centered divider grips. The visual direction is for review.
 - Prepare two pinned public corpora locally with byte/hash/archive/nesting checks,
   without replaying attacks, executing accompanying files or following log URLs.
   See [the corpus guide](testing/cloudtrail-datasets.md) for provenance and commands.
@@ -150,6 +153,11 @@ Latest verification on 2026-10-14 (earlier browser measurements below remain his
   beyond graph bounds, 430px containment, reachable Close and parent focus after Escape.
   Upper controls are compacted with existing label sizes and visible focus. Earlier
   graph-stage containment checks are historical; current bounds are the visible tab.
+- Visual-polish checks: text ratios 13.31:1 primary / 5.91:1 muted; selected accent
+  5.76:1; control outlines 3.41:1 and divider grips 3.15:1. Denied evidence, focus and
+  populated 430px reflow were checked. Native copy success feedback appeared, but the
+  browser tool's virtual clipboard was empty, so copy readback was not verified here.
+  The shared copy handler is unchanged. No console warnings/errors were recorded.
 
 The upstream fixture test skips when its external checkout is absent; it ran here.
 Tests required normal Windows path access because the sandbox denies strict resolution
@@ -179,7 +187,7 @@ wheel inspection confirmed it is excluded.
 
 The local preview runs on `http://127.0.0.1:8765`, reading `.local/preview-cases`.
 It includes pinned sample/public corpus cases and clearly labeled synthetic/empty/
-graph-paging/dense/long-value checks. The current screenshot is `.local/tab-wide-subgraph.jpg`; preview data
+graph-paging/dense/long-value checks. The current screenshot is `.local/workbench-polish.jpg`; preview data
 and images are ignored.
 
 The earlier hypothetical UI comparison demonstrated design interactions only. Its
@@ -217,9 +225,8 @@ accessibility considered in every UI increment.
 
 ## Recommended next increment
 
-Merge the integration PR into main after reviewing its consolidated diff. For future
-dependent PRs, change their base to main after prerequisites merge and before merging
-them; merging into a feature branch does not update main. Next, address measured import and
+Review the first visual-polish pass. Neutral blue is the stated initial assumption,
+not a final owner selection. Next, address measured import and
 relationship-query costs before increasing corpus size or graph budgets. Record memory,
 paint and input latency separately before choosing a larger-view renderer. The time
 slider, session expansion and explicit Expand remain focused increments. Detection
@@ -245,3 +252,5 @@ focus follows real Suzaku integration.
 | 2026-10-14 | Tab-wide subgraph (`feature/tab-wide-subgraph`) | Body-level fixed window, tab bounds, compact upper controls and 120px identity scroller; 64 Python and 23 client tests, browser QA and eleven assets. Dependent on #8. |
 | 2026-10-14 | PR #7 review fixes | Reject duplicate allowlisted members before payload reads; align evidence-divider arrows with pointer movement. 67 Python and 21 client tests; existing pinned corpora still validate. |
 | 2026-10-14 | UI integration (`feature/integrate-reviewed-ui`) | Main at `8cca2bb` includes #7; #8/#9 were merged into dependency branches. Integrates their reviewed code unchanged in a PR directly to main. 67 Python and 26 client tests. |
+| 2026-10-14 | Integration merged (`5fa5b55`) | PR #10 delivers all reviewed UI changes and review fixes to main. |
+| 2026-10-14 | Workbench visual polish (`feature/workbench-polish`) | Neutral first-pass palette, calmer borders/list choices and surface/type hierarchy; unchanged behavior, 67 Python and 26 client tests. For visual review. |
