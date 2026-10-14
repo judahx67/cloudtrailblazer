@@ -40,12 +40,49 @@ def test_record_shape_and_nesting_are_bounded():
         corpus.validate([record])
 
 
-def test_pinned_json_only_archive_and_ndjson_preserve_source_bytes(tmp_path, monkeypatch):
+@pytest.mark.parametrize("duplicate_index", [0, 19])
+def test_duplicate_allowlisted_members_are_rejected_before_extraction(
+    tmp_path, monkeypatch, duplicate_index
+):
+    archive = tmp_path / "flaws-cloud" / "flaws_cloudtrail_logs.tar"
+    archive.parent.mkdir()
+    # Twenty expected files plus one duplicate fit the old 21-entry allowance.
+    with tarfile.open(archive, "w") as tar:
+        for index in [*range(20), duplicate_index]:
+            member = tarfile.TarInfo(f"flaws_cloudtrail_logs/flaws_cloudtrail{index:02d}.json.gz")
+            member.size = 1
+            tar.addfile(member, io.BytesIO(b"x"))
+    monkeypatch.setattr(
+        corpus,
+        "FLAWS",
+        {
+            **spec(archive.read_bytes()),
+            "member": "flaws_cloudtrail_logs/flaws_cloudtrail19.json.gz",
+        },
+    )
+
+    def forbidden_extraction(*args, **kwargs):
+        pytest.fail("Duplicate members must fail before any member is read")
+
+    monkeypatch.setattr(tarfile.TarFile, "extractfile", forbidden_extraction)
+    with pytest.raises(ValueError, match="Unexpected archive"):
+        corpus.prepare(tmp_path)
+    assert not (archive.parent / "flaws_cloudtrail19.json.gz").exists()
+
+
+@pytest.mark.parametrize("include_directory", [False, True])
+def test_pinned_json_only_archive_and_ndjson_preserve_source_bytes(
+    tmp_path, monkeypatch, include_directory
+):
     record = {"eventTime": "2024-01-01T00:00:00Z", "eventSource": "test", "eventName": "Read"}
     packed = gzip.compress(json.dumps({"Records": [record]}).encode())
     archive = tmp_path / "flaws-cloud" / "flaws_cloudtrail_logs.tar"
     archive.parent.mkdir()
     with tarfile.open(archive, "w") as tar:
+        if include_directory:
+            directory = tarfile.TarInfo("flaws_cloudtrail_logs")
+            directory.type = tarfile.DIRTYPE
+            tar.addfile(directory)
         for index in range(20):
             member = tarfile.TarInfo(f"flaws_cloudtrail_logs/flaws_cloudtrail{index:02d}.json.gz")
             member.size = len(packed)
