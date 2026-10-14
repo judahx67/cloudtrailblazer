@@ -1,20 +1,19 @@
 # Project state
 
-Last updated: 2026-10-14. Latest main checkpoint: `5fa5b55` (PR #10 merged).
-Main now includes all reviewed UI increments and PR #7 fixes. Current increment:
-`feature/workbench-polish`, targeting main. The owner requested a calmer, more
-enterprise-looking presentation; this first visual pass uses neutral surfaces,
-lighter hierarchy and restrained blue selection for review.
+Last updated: 2026-10-14. Latest main checkpoint: `e614b93` (PR #11 merged).
+Neutral white/gray surfaces, subtle blue selection and quieter borders are the
+owner-selected baseline. PR #12 was closed because #11 was sufficient.
+Current increment: `feature/time-slider`, directly based on main.
 No PR is auto-merged.
 
 ## Current milestone
 
 Resizable panels, automatic identity scrolling, tab-wide subgraph placement and compact
-controls are on main. The current first styling pass separates quiet section lines from
+controls are on main. The merged styling pass separates quiet section lines from
 functional boundaries, removes repetitive inactive list-item frames and clarifies
 surface/type hierarchy. No investigation behavior or backend changes are introduced.
-The exact start/end inputs remain the global time control;
-the draggable timeline is intentionally deferred to its own increment.
+The current increment adds a two-handle slider between compact exact fields, with
+commit-on-release scope updates, native keyboard control and clearer identity buttons.
 
 The case/relationship foundation, local Events inspector and first Identity focus
 neighborhood are complete. The user
@@ -77,7 +76,14 @@ Implemented capabilities:
   space; identity scrolling remains available in a 120px region.
 - First visual-polish pass: neutral gray case/header surfaces and white workspaces,
   pale blue full-border selection, quieter inactive navigation/list choices, distinct
-  control-boundary tokens and centered divider grips. The visual direction is for review.
+  control-boundary tokens and centered divider grips. This visual baseline was confirmed by the owner.
+- Adjust global time with two native range handles: preview exact UTC fields while
+  dragging, apply on release or keyboard change, clamp crossing at one microsecond,
+  and reset to full case bounds. Exact/open/out-of-case field queries remain available
+  through Apply; invalid or out-of-case drafts disable slider interaction. Empty cases
+  show no timed range. On narrow panels, the slider moves below the fields.
+- Identify identity/member choices by a visible four-border button surface and accent
+  label; event action buttons are underlined.
 - Prepare two pinned public corpora locally with byte/hash/archive/nesting checks,
   without replaying attacks, executing accompanying files or following log URLs.
   See [the corpus guide](testing/cloudtrail-datasets.md) for provenance and commands.
@@ -93,12 +99,19 @@ See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
 
 Latest verification on 2026-10-14 (earlier browser measurements below remain historical):
 
+- Time-slider checks: native Arrow/Home/End updates, repeated tick movement, compact
+  fields, invalid drafts, Reset, empty and one-microsecond cases, stale evidence and
+  4,196-record public-log scope updates. At 430px there was no document-width overflow.
+  New client tests verify offset/pre-epoch conversion, exact endpoint preservation,
+  crossing clamps and preview-versus-commit behavior. Native pointer dragging and
+  Firefox styling remain manual/unverified; screen-reader and zoom audits remain open.
+
 - All 67 Python tests passed, including duplicate archive rejection before extraction,
   valid optional-directory layouts, corpus hash/nesting/archive-link regressions,
   grouping/HTTP and self-target members.
   Existing evidence/identity semantics and new discovery, pagination, exact full-case
   bounds, decimal text, typed errors, read-only/local policies and assets are checked.
-- All 26 client tests passed, including tab-wide geometry/viewport shrink, scroll-loader serialization, stale success/error
+- All 30 client tests passed, including tab-wide geometry/viewport shrink, scroll-loader serialization, stale success/error
   resets, retained page/retry offsets and empty/end states, evidence-divider keyboard/
   pointer direction parity in wide/medium/narrow layouts, pointer capture/cancellation, header dragging,
   panel minimum space/reset/responsive modes, window containment, source group layout,
@@ -114,7 +127,7 @@ Latest verification on 2026-10-14 (earlier browser measurements below remain his
   overflow with populated evidence. No browser console warnings/errors were recorded.
   These are targeted checks, not a full accessibility audit; screen-reader and browser
   zoom verification remain open.
-- The wheel built successfully with all eleven client assets and no local cases,
+- The wheel built successfully with all twelve client assets and no local cases,
   environments, caches or upstream checkout included.
 - Manual browser verification used all 33 pinned Suzaku AWS events. The denied
   DeleteTrail event opened its AccessDenied JSON and original source/hash/ordinal.
@@ -187,7 +200,7 @@ wheel inspection confirmed it is excluded.
 
 The local preview runs on `http://127.0.0.1:8765`, reading `.local/preview-cases`.
 It includes pinned sample/public corpus cases and clearly labeled synthetic/empty/
-graph-paging/dense/long-value checks. The current screenshot is `.local/workbench-polish.jpg`; preview data
+graph-paging/dense/long-value checks. The current screenshot is `.local/time-slider.jpg`; preview data
 and images are ignored.
 
 The earlier hypothetical UI comparison demonstrated design interactions only. Its
@@ -201,7 +214,7 @@ accessibility considered in every UI increment.
 - Imports are synchronous and create new cases; append/edit, jobs,
   Parquet, oversized-input budgets and interrupted-process recovery are deferred.
 - Cases are read-only through the module, not tamper-proof archives. Source copying
-  adds disk cost; per-record inserts have not been benchmarked.
+  adds disk cost; the larger-corpus import exceeded its recorded budget.
 - Each relationship query recomputes its projection. The scan budget bounds event
   count; graph budgets bound output after projection, not peak memory. Identity and
   evidence pagination do not yet avoid the full scoped scan.
@@ -212,7 +225,7 @@ accessibility considered in every UI increment.
   size, while the module still loads all occurrence references internally; a single
   event's JSON has no size budget. Browser aborts discard stale results without
   canceling already running backend work.
-- Import is CLI-only. No event search/action filter, two-handle time slider,
+- Import is CLI-only. No event search/action filter,
   session expansion controls, graph Expand, pan/zoom or Case overview exists yet.
   Dense neighborhoods with many service buckets can still exceed the small prototype
   view budget after grouping. There is one child window, not a nested hierarchy.
@@ -220,17 +233,17 @@ accessibility considered in every UI increment.
   time changes can leave empty lanes; a deliberate new focus resets that history.
 - The wrapper distribution/license decision remains open; upstream Suzaku uses AGPLv3.
 - `AGENTS.md` is ignored now but remains in earlier commits; ignoring does not erase history.
-- The panel work is ready for review. Import cost blocks practical UI validation of
+- Panel and visual-polish work is merged; the time slider is ready for review. Import cost blocks practical UI validation of
   the larger corpus until the next performance increment.
 
 ## Recommended next increment
 
-Review the first visual-polish pass. Neutral blue is the stated initial assumption,
-not a final owner selection. Next, address measured import and
-relationship-query costs before increasing corpus size or graph budgets. Record memory,
-paint and input latency separately before choosing a larger-view renderer. The time
-slider, session expansion and explicit Expand remain focused increments. Detection
-focus follows real Suzaku integration.
+Next, batch import writes while preserving evidence and atomic publication; repeat
+the pinned 39,207-record benchmark with explicit time/memory budgets. Address
+relationship-query costs before increasing corpus size or graph budgets. Record
+paint and input latency separately before choosing a larger-view renderer. Session
+expansion and explicit Expand remain focused increments. Detection focus follows
+real Suzaku integration.
 
 ## Milestone history
 
@@ -254,3 +267,4 @@ focus follows real Suzaku integration.
 | 2026-10-14 | UI integration (`feature/integrate-reviewed-ui`) | Main at `8cca2bb` includes #7; #8/#9 were merged into dependency branches. Integrates their reviewed code unchanged in a PR directly to main. 67 Python and 26 client tests. |
 | 2026-10-14 | Integration merged (`5fa5b55`) | PR #10 delivers all reviewed UI changes and review fixes to main. |
 | 2026-10-14 | Workbench visual polish (`feature/workbench-polish`) | Neutral first-pass palette, calmer borders/list choices and surface/type hierarchy; unchanged behavior, 67 Python and 26 client tests. For visual review. |
+| 2026-10-14 | Time slider (`feature/time-slider`) | Two handles, compact exact fields, commit-on-release shared scope, exact microsecond clamping and clearer identity buttons. PR #11 visual baseline merged; #12 documentation PR closed by owner. |

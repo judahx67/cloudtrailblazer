@@ -35,7 +35,7 @@ input { width: 100%; padding: 4px 7px; }
 .app-header button, .events button, .events input { min-height: 30px; }
 .workbench { flex: 1; min-height: 0; display: grid; grid-template-areas: "cases cases-divider investigation evidence-divider evidence"; overflow: auto; }
 .cases { grid-area: cases; background: var(--surface); }
-.events { grid-area: investigation; overflow: hidden; }
+.events { grid-area: investigation; overflow: hidden; container-type: inline-size; }
 .inspector { grid-area: evidence; }
 #cases-divider { grid-area: cases-divider; }
 #evidence-divider { grid-area: evidence-divider; }
@@ -57,8 +57,8 @@ input { width: 100%; padding: 4px 7px; }
 .case-choice { display: grid; grid-template-columns: 1fr auto; text-align: left; gap: 10px; width: 100%; margin-bottom: 4px; padding: 8px; background: transparent; border-color: transparent; }
 .case-choice span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .case-choice[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--selection); }
-.time-form { display: flex; align-items: end; flex-wrap: wrap; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--line); }
-.time-form label { flex: 1 1 170px; min-width: 0; color: var(--muted); font-size: 12px; }
+.time-form { display: grid; grid-template-columns: minmax(0, 140px) minmax(120px, 1fr) minmax(0, 140px) auto auto; align-items: center; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--line); }
+.time-form label { min-width: 0; color: var(--muted); font-size: 12px; }
 .time-form input { margin-top: 2px; color: var(--text); font-family: var(--mono); font-size: 12px; }
 .table-wrap { flex: 1; overflow: auto; }
 .event-section { display: flex; flex: 1; flex-direction: column; min-height: 180px; }
@@ -72,8 +72,9 @@ button[aria-pressed="true"]:hover:not(:disabled) { border-color: var(--accent); 
 .identity-search-form .search-controls { flex: 1; min-width: 0; margin: 0; }
 .search-controls { display: flex; gap: 8px; margin-top: 4px; }
 .identity-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 4px; padding: 0 12px 4px; max-height: 120px; overflow: auto; }
-.identity-choice { display: flex; flex-direction: column; text-align: left; min-width: 0; border-color: transparent; padding: 6px 9px; }
+.identity-choice { background: var(--surface); display: flex; flex-direction: column; text-align: left; min-width: 0; border-color: var(--control-line); padding: 6px 9px; }
 .identity-choice span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.identity-choice > span:first-child { color: var(--accent); }
 .identity-choice .muted { font-size: 12px; }
 .identity-progress { padding: 2px 12px 4px; font-size: 12px; border-bottom: 1px solid var(--line); }
 #graph-count { font-size: 12px; }
@@ -118,7 +119,7 @@ th:last-child { width: 85px; }
 td:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--mono); font-size: 12px; }
 td.actor { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 td.outcome { white-space: nowrap; }
-.event-action { padding: 2px 5px; min-height: 30px; max-width: 100%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: transparent; border-color: transparent; color: var(--accent); }
+.event-action { text-decoration: underline; text-underline-offset: 3px; padding: 2px 5px; min-height: 30px; max-width: 100%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: transparent; border-color: transparent; color: var(--accent); }
 tr[aria-selected="true"] { outline: 1px solid var(--accent); outline-offset: -1px; background: var(--selection); }
 tr[aria-selected="true"] .event-action { border-color: var(--accent); color: var(--accent); }
 .pager { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 12px; }
@@ -153,3 +154,29 @@ footer { min-height: 28px; padding: 0 12px; border-top: 1px solid var(--line); f
   .identity-search-form .search-controls { flex-basis: 100%; }
   footer { flex-wrap: wrap; }
 }
+
+/* Native keyboard controls share a track; staggered thumbs stay reachable at close bounds. */
+.time-slider { position: relative; min-width: 120px; height: 56px; }
+.time-form .time-slider input { position: absolute; inset: 0; width: 100%; height: 56px; margin: 0; padding: 0; border: 0; background: transparent; appearance: none; pointer-events: none; }
+.time-track { position: absolute; left: 12px; right: 12px; top: 27px; height: 2px; background: var(--control-line); }
+.time-track span { position: absolute; left: var(--range-start, 0%); right: calc(100% - var(--range-end, 100%)); height: 2px; background: var(--accent); }
+.time-slider input::-webkit-slider-runnable-track { height: 2px; background: transparent; }
+.time-slider input::-webkit-slider-thumb { appearance: none; width: 24px; height: 24px; margin-top: -25px; border: 1px solid var(--accent); border-radius: 0; background: var(--selection); pointer-events: auto; cursor: ew-resize; }
+.time-slider #slider-end::-webkit-slider-thumb { margin-top: 1px; }
+.time-slider input::-moz-range-track { height: 2px; background: transparent; }
+.time-slider input::-moz-range-thumb { width: 22px; height: 22px; transform: translateY(-13px); border: 1px solid var(--accent); border-radius: 0; background: var(--selection); pointer-events: auto; cursor: ew-resize; }
+.time-slider #slider-end::-moz-range-thumb { transform: translateY(13px); }
+.time-slider input:disabled { opacity: .45; }
+.time-slider input:disabled::-webkit-slider-thumb { pointer-events: none; cursor: default; }
+.time-slider input:disabled::-moz-range-thumb { pointer-events: none; cursor: default; }
+.time-slider input:focus-visible { outline: none; }
+.time-slider input:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+.time-slider input:focus-visible::-moz-range-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+#slider-status, #time-draft { font-size: 12px; }
+#slider-status:not(:empty), #time-draft:not(:empty) { grid-column: 1 / -1; }
+@container (max-width: 560px) {
+  .time-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto; }
+  .time-slider { grid-row: 2; grid-column: 1 / -1; }
+}
+
+#slider-status:empty, #time-draft:empty { display: none; }

@@ -24,8 +24,15 @@
       <div class="view-switch" role="group" aria-label="Investigation view"><button id="view-identity" aria-pressed="true" disabled>Identity focus</button><button id="view-events" aria-pressed="false" disabled>Events</button></div>
       <form id="time-form" class="time-form">
         <label>Start: UTC<input id="time-start" type="text" placeholder="ISO timestamp" spellcheck="false" disabled aria-describedby="time-help"></label>
+        <div class="time-slider" role="group" aria-label="Case time range" title="Drag either handle; Arrow keys adjust, Home/End use case limits">
+          <div id="time-track" class="time-track"><span></span></div>
+          <input id="slider-start" type="range" min="0" max="10000" value="0" step="1" disabled title="Start: included" aria-label="Range start" aria-describedby="time-help slider-help">
+          <input id="slider-end" type="range" min="0" max="10000" value="10000" step="1" disabled title="End: excluded" aria-label="Range end" aria-describedby="time-help slider-help">
+          <span id="slider-help" class="sr-only">Upper handle: start. Lower handle: end. Slider changes apply on release. Exact timestamp edits use Apply.</span>
+        </div>
         <label>End: UTC<input id="time-end" type="text" placeholder="ISO timestamp" spellcheck="false" disabled aria-describedby="time-help"></label>
         <button id="apply-time" type="submit" disabled>Apply</button><button id="reset-time" type="button" disabled title="Restore full case range">Reset</button>
+        <span id="slider-status" class="muted" role="status"></span>
         <span id="time-draft" class="muted" role="status"></span>
         <span id="time-help" class="sr-only">Start included; end excluded. Enter an ISO timestamp with a timezone offset. Blank bounds are open.</span>
       </form>

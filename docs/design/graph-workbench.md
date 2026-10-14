@@ -7,7 +7,8 @@ has case and relationship modules, a CLI, a local Events inspector and an initia
 Identity focus neighborhood. The dependent graph PRs now add density groups and one
 member subgraph window with shared time scope and evidence. The conversational
 comparison used hypothetical data. Case overview, session expansion controls,
-pan/zoom, Expand and the slider remain future work. See the
+pan/zoom and Expand remain future work. The two-handle time slider is now implemented
+with exact fields; see the [slider decision](../decisions/0011-time-slider.md). See the
 [subgraph decision](../decisions/0006-subgraph-window.md) for delivered behavior and limits.
 
 ## Purpose and audience
@@ -118,7 +119,7 @@ validate on representative workloads. Nested windows are not part of this design
 Use simple lines, square controls, matte light surfaces, dark text and muted
 selection fills. The latest owner direction favors a calmer enterprise presentation
 over pronounced terminal styling; the [first polish pass](../decisions/0010-workbench-visual-polish.md)
-uses neutral surfaces and restrained blue for review.
+uses the owner-selected neutral surfaces and restrained blue.
 The user requires a professional light theme only. Use system
 sans-serif for interface labels and monospace for JSON and technical values. The first
 inspector used Consolas throughout; this direction supersedes that font treatment.

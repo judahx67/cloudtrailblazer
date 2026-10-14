@@ -108,7 +108,7 @@ export class IdentityWorkbench {
       button.dataset.identityId = node.id;
       button.setAttribute("aria-label", `Focus ${node.label}: ${node.event_count} events: ${node.account_id || "account unknown"}`);
       button.setAttribute("aria-pressed", String(node.id === this.identity?.id));
-      button.title = `${node.identifier}\nFirst: ${node.first_seen}\nLast: ${node.last_seen}`;
+      button.title = `Show neighborhood\n${node.identifier}\nFirst: ${node.first_seen}\nLast: ${node.last_seen}`;
       const label = element("span", node.label);
       const detail = element("span", `${node.account_id || "account unknown"}: ${node.event_count} events`, "muted");
       button.append(label, detail);

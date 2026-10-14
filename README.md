@@ -10,7 +10,7 @@ state document and the accepted decisions; the local anchor is not distributed.
 The backend imports AWS logs, preserves evidence and projects relationships. A local
 Events inspector opens cases and original evidence. Identity focus renders a direct
 observed neighborhood and opens connection-specific event pages in the shared inspector.
-Case overview, dense grouping and Suzaku detection jobs are subsequent milestones.
+Case overview and Suzaku detection jobs are subsequent milestones.
 
 Each coding increment uses a purpose-based branch (`feature/`, `fix/`, `docs/`,
 `cicd/`) and a separate pull request for review. Do not use the `codex/` prefix here.
@@ -47,9 +47,14 @@ source references. Enter/Space select graph items. Use Events for the full case 
 Drag the panel dividers to resize cases, investigation and evidence. Arrow keys and
 Home/End resize focused dividers; Reset layout restores defaults. On narrower screens,
 panels stack and the dividers adjust height. Scroll regions also accept keyboard focus.
-Time inputs accept ISO timestamps
+Drag the two time handles to narrow or widen the case range; changes apply on release.
+The upper handle sets Start and the lower handle sets End. Arrow keys adjust, and
+Home/End move toward the full case limits without crossing the other bound.
+Compact time inputs accept ISO timestamps
 with explicit offsets; Apply updates the range and Reset restores the full case.
-Unapplied edits do not affect paging. Evidence outside the applied range is marked.
+Unapplied edits do not affect paging. Slider steps are approximate; use the fields
+for exact microsecond bounds. Invalid, open or out-of-case drafts disable the slider
+until corrected or reset. Empty cases have no slider range. Evidence outside the applied range is marked.
 
 Cases default to `.local/cases`. `--data-dir <path>` before `serve` selects another
 root; `serve --port <port>` changes the port. The CLI binds to loopback only. Stop it
