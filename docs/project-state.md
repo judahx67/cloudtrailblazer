@@ -1,20 +1,18 @@
 # Project state
 
-Last updated: 2026-10-14. Latest main checkpoint: `10170b6` (PR #4 merged).
-Current increment: `feature/tab-wide-subgraph`, dependent on open PR #8 (identity
-scrolling), itself dependent on #7 (panels). Review #7, then retarget #8 to main after
-#7 merges; retarget the window PR to main after #8 merges. The owner merged #5 into
-`feature/identity-graph` and #6 into `feature/grouped-neighborhoods`; those changes
-were not on main. This branch integrates that already-reviewed work, then adds panel
-resizing, header dragging and pinned recurring test corpora. Its PR targets main.
+Last updated: 2026-10-14. Latest main checkpoint: `8cca2bb` (PR #7 merged).
+The owner merged all three UI PRs: #7 into main, #8 into `feature/resizable-panels`
+and #9 into `feature/scroll-identities`. Main therefore contained the panel/corpus
+work and review fixes but not identity scrolling or tab-wide placement.
+Current increment: `feature/integrate-reviewed-ui`, targeting main. It merges the
+already-reviewed #8/#9 code unchanged and consolidates the handoff notes.
 No PR is auto-merged.
 
 ## Current milestone
 
-The grouped neighborhood/window milestones are reviewed. The current increment adds
-tab-wide subgraph placement and compact graph controls. The preceding identity PR adds
-automatic loading on scroll, replacing browser Prev/Next identity paging.
-The preceding panel PR adds resizing, header dragging and real-log validation.
+The UI milestones and PR #7 review fixes are reviewed. The integration branch contains
+resizable panels, automatic identity scrolling, tab-wide subgraph placement and compact
+controls together. No new product behavior is added by this consolidation.
 The exact start/end inputs remain the global time control;
 the draggable timeline is intentionally deferred to its own increment.
 
@@ -219,9 +217,9 @@ accessibility considered in every UI increment.
 
 ## Recommended next increment
 
-Review the panel/layout PR to main, which also integrates the already-reviewed #5/#6
-changes from their former dependency branches, then retarget the identity scroll PR
-to main; retarget the tab-wide window PR after #8 merges. Then address measured import and
+Merge the integration PR into main after reviewing its consolidated diff. For future
+dependent PRs, change their base to main after prerequisites merge and before merging
+them; merging into a feature branch does not update main. Next, address measured import and
 relationship-query costs before increasing corpus size or graph budgets. Record memory,
 paint and input latency separately before choosing a larger-view renderer. The time
 slider, session expansion and explicit Expand remain focused increments. Detection
@@ -246,3 +244,4 @@ focus follows real Suzaku integration.
 | 2026-10-14 | Identity scrolling (`feature/scroll-identities`) | Replaces identity Prev/Next with bounded automatic loading, reset/race/error handling and loaded counts; 64 Python and 22 client tests, browser QA and eleven assets. Dependent on #7. |
 | 2026-10-14 | Tab-wide subgraph (`feature/tab-wide-subgraph`) | Body-level fixed window, tab bounds, compact upper controls and 120px identity scroller; 64 Python and 23 client tests, browser QA and eleven assets. Dependent on #8. |
 | 2026-10-14 | PR #7 review fixes | Reject duplicate allowlisted members before payload reads; align evidence-divider arrows with pointer movement. 67 Python and 21 client tests; existing pinned corpora still validate. |
+| 2026-10-14 | UI integration (`feature/integrate-reviewed-ui`) | Main at `8cca2bb` includes #7; #8/#9 were merged into dependency branches. Integrates their reviewed code unchanged in a PR directly to main. 67 Python and 26 client tests. |
