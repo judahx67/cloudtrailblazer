@@ -37,7 +37,7 @@ export class TrailView {
     this.backButton.hidden = !this.focus;
     this.label.textContent = this.focus ? `Trail: ${this.focus.label}: ${this.focus.event_count} supporting events`
       : this.candidate ? `${this.candidate.kind === "node" ? "Node" : "Connection"}: ${this.candidate.label}` : "";
-    this.label.title = "Direct observed relationships in this diagram’s current scope. Node details retain neighborhood totals.";
+    this.label.title = `${this.label.textContent}\n` + "Direct observed relationships in this diagram’s current scope. Node details retain neighborhood totals.";
     this.followButton.title = this.candidate ? `Follow ${this.candidate.label}` : "Hover, focus or select a node or connection";
   }
 }

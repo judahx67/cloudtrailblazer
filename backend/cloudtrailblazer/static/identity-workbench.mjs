@@ -74,6 +74,8 @@ export class IdentityWorkbench {
     byId("identities-count").textContent = "";
     byId("graph-canvas").replaceChildren();
     byId("connection-list").replaceChildren();
+    byId("connection-list-summary").textContent = "Connection list";
+    byId("connection-options").open = false;
     byId("graph-count").textContent = "";
     delete byId("graph-count").dataset.timings;
     notice("graph-status", "Apply a valid time range to browse identities.");
@@ -84,6 +86,8 @@ export class IdentityWorkbench {
     this.cancel({ preserveGroup: this.caseId === caseId });
     if (this.caseId !== caseId) {
       this.identity = null; this.positions.clear(); this.search = "";
+      byId("identity-picker").open = true; byId("identity-current").textContent = "Choose identity";
+      byId("identity-current").removeAttribute("title");
       byId("identity-search").value = "";
     }
     this.caseId = caseId; this.scope = { ...scope }; this.memberOffset = 0; this.ready = true;
@@ -137,6 +141,10 @@ export class IdentityWorkbench {
       button.addEventListener("click", () => {
         this.closeGroup(false);
         this.identity = node; this.positions.clear(); this.loadGraph();
+        byId("identity-current").textContent = `Identity: ${node.label}`;
+        byId("identity-current").title = node.identifier;
+        byId("identity-picker").open = false;
+        byId("identity-picker").querySelector("summary").focus();
         for (const item of byId("identity-list").children) {
           item.setAttribute("aria-pressed", String(item.dataset.identityId === node.id));
         }
@@ -172,6 +180,7 @@ export class IdentityWorkbench {
     });
     const list = byId(child ? "subgraph-connections" : "connection-list");
     list.replaceChildren();
+    if (!child) byId("connection-list-summary").textContent = `Connection list: ${layout.connections.length}`;
     for (const edge of layout.connections) {
       const button = element("button", undefined, "connection-choice");
       button.dataset.connectionId = edge.id; button.setAttribute("aria-pressed", "false");

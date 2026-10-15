@@ -21,7 +21,7 @@
     <div id="cases-divider" class="panel-divider" role="separator" tabindex="0" aria-label="Resize case browser" aria-controls="case-list" title="Drag or use Arrow keys; Home/End use size limits"></div>
     <main class="events panel" aria-label="Investigation workspace">
       <div class="panel-heading"><h2 id="case-name">Investigation</h2><span id="case-count" class="muted"></span></div>
-      <div class="view-switch" role="group" aria-label="Investigation view"><button id="view-identity" aria-pressed="true" disabled>Identity focus</button><button id="view-events" aria-pressed="false" disabled>Events</button></div>
+      <div class="view-switch" role="group" aria-label="Investigation view"><button id="view-identity" aria-pressed="true" disabled>Identity focus</button><button id="view-events" aria-pressed="false" disabled>Events</button><button id="toggle-activity" aria-expanded="false" aria-controls="activity-search-form" disabled>Find activity</button></div>
       <form id="time-form" class="time-form">
         <label>Start: UTC<input id="time-start" type="text" placeholder="ISO timestamp" spellcheck="false" disabled aria-describedby="time-help"></label>
         <div class="time-slider" role="group" aria-label="Case time range" title="Drag either handle; Arrow keys adjust, Home/End use case limits">
@@ -36,7 +36,7 @@
         <span id="time-draft" class="muted" role="status"></span>
         <span id="time-help" class="sr-only">Start included; end excluded. Enter an ISO timestamp with a timezone offset. Blank bounds are open.</span>
       </form>
-      <form id="activity-search-form" class="activity-search-form">
+      <form id="activity-search-form" class="activity-search-form" hidden>
         <label for="activity-search" title="Literal, case-insensitive search across original event JSON. Applied time bounds are retained.">Find activity</label>
         <input id="activity-search" type="search" maxlength="512" placeholder="Action, IP, ARN, resource or event ID" disabled aria-describedby="activity-help">
         <label class="sr-only" for="activity-outcome">Activity outcome</label>
@@ -47,19 +47,19 @@
       </form>
       <p id="events-status" class="notice" role="status">Choose a case.</p>
       <section id="graph-workspace" aria-label="Identity focus workspace">
+        <details id="identity-picker" open><summary><span id="identity-current">Choose identity</span><span class="identity-change muted">: Change</span></summary>
         <form id="identity-search-form" class="identity-search-form"><label for="identity-search">Identity search</label><div class="search-controls"><input id="identity-search" type="search" placeholder="Name, ARN or account" disabled><button id="identity-search-submit" disabled>Search</button></div></form>
         <p id="identity-status" class="notice" role="status"></p>
         <div id="identity-list" class="identity-list" tabindex="0" role="region" aria-label="Identity results"></div>
-        <div class="identity-progress muted" id="identities-count" role="status"></div>
-        <div class="panel-heading"><h3>Neighborhood</h3><button id="reset-columns" title="Restore automatic graph column positions and widths">Reset columns</button><span id="graph-count" class="muted"></span></div>
+        <div class="identity-progress muted" id="identities-count" role="status"></div></details>
+        <div class="panel-heading graph-heading"><h3>Neighborhood</h3><button id="follow-trail" disabled>Follow trail</button><button id="trail-back" hidden>Full neighborhood</button><span id="trail-label" class="muted" role="status"></span><button id="reset-columns" title="Restore automatic graph column positions and widths">Reset columns</button><span id="graph-count" class="muted"></span></div>
         <p id="graph-status" class="notice" role="status">Choose a case.</p>
         <div id="graph-stage" class="graph-stage">
-          <div class="trail-controls"><button id="follow-trail" disabled>Follow trail</button><button id="trail-back" hidden>Full neighborhood</button><span id="trail-label" class="muted" role="status"></span></div>
           <div id="graph-canvas" class="graph-canvas"></div>
 
         </div>
         <p class="graph-legend muted">S: observed source &gt; identity. A: identity &gt; target. Failed attempts: dashed.</p>
-        <div id="connection-list" class="connection-list" role="group" aria-label="Observed connections"></div>
+        <details id="connection-options"><summary id="connection-list-summary">Connection list</summary><div id="connection-list" class="connection-list" role="group" aria-label="Observed connections"></div></details>
       </section>
       <section id="event-section" class="event-section" aria-label="Event list" hidden>
       <div id="connection-heading" class="panel-heading" hidden><h3>Supporting events</h3><span id="connection-name" class="muted"></span></div>

@@ -28,7 +28,7 @@ export function layoutNeighborhood(graph, positions = new Map(), columns = new C
     const isFocus = node.id === focus?.id;
     const column = columns.columns[isFocus ? 1 : lane === "left" ? 0 : 2];
     return { ...node, x: column.x, width: column.width,
-      y: isFocus ? 80 : 80 + slot(`node:${node.id}`, lane) * 110 };
+      y: isFocus ? 32 : 32 + slot(`node:${node.id}`, lane) * 110 };
   });
   const lookup = new Map(nodes.map(node => [node.id, node]));
   const connections = [...graph.connections].sort((a, b) => a.id.localeCompare(b.id)).map(edge => {
@@ -37,7 +37,7 @@ export function layoutNeighborhood(graph, positions = new Map(), columns = new C
     const incoming = edge.kind === "observed_source";
     const row = slot(`edge:${edge.id}`, incoming ? "incoming" : "outgoing");
     const left = columns.columns[incoming ? 0 : 1], right = columns.columns[incoming ? 1 : 2];
-    const label = { x: (left.x + left.width + right.x) / 2, y: 110 + row * 40 };
+    const label = { x: (left.x + left.width + right.x) / 2, y: 62 + row * 40 };
     // A recorded self-target uses a visible loop instead of a zero-length arrow.
     const self = source.id === target.id;
     const points = self

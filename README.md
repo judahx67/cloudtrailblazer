@@ -45,6 +45,10 @@ identity and inspect its direct neighborhood. Scroll the identity results to loa
 more automatically; there are no identity page buttons. Select a node for its full details, or
 a connection for supporting-event pages; select an event for its original JSON and
 source references. Enter/Space select graph items. Use Events for the full case table.
+Selecting an identity collapses its picker; open `Identity: name: Change` to choose
+another. The diagram fills the remaining panel height. Open `Connection list` for
+the alternative connection buttons. In Identity focus, `Find activity` reveals the
+search controls on demand; Events keeps them visible.
 Find activity searches original event JSON for a literal case-insensitive string,
 such as an action, IP, ARN, resource name or event ID (up to 512 characters). Choose
 All outcomes, Recorded error or No reported error; the last does not guarantee success.
