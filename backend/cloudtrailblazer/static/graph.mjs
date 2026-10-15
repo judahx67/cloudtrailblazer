@@ -57,21 +57,19 @@ function svgElement(tag, attributes = {}, text) {
   return node;
 }
 
-function interactive(group, label, activate, preview) {
+function interactive(group, label, activate) {
   group.setAttribute("role", "button");
   group.setAttribute("tabindex", "0");
   group.setAttribute("aria-label", label);
   group.setAttribute("aria-pressed", "false");
   group.append(svgElement("title", {}, label));
   group.addEventListener("click", activate);
-  group.addEventListener("mouseenter", preview);
-  group.addEventListener("focus", preview);
   group.addEventListener("keydown", event => {
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); }
   });
 }
 
-export function renderNeighborhood(container, layout, { selectNode, selectConnection, preview = () => {} }) {
+export function renderNeighborhood(container, layout, { selectNode, selectConnection }) {
   const markerId = `${container.id}-arrow`;
   const svg = svgElement("svg", { viewBox: `0 0 ${layout.width} ${layout.height}`,
     width: layout.width, height: layout.height, role: "group", "aria-label": "Observed identity neighborhood" });
@@ -87,7 +85,7 @@ export function renderNeighborhood(container, layout, { selectNode, selectConnec
     group.append(svgElement("rect", { x: edge.label.x - 18, y: edge.label.y - 14, width: 36, height: 28 }));
     group.append(svgElement("text", { x: edge.label.x, y: edge.label.y + 4, "text-anchor": "middle" },
       `${edge.incoming ? "S" : "A"}${edge.number}`));
-    interactive(group, connectionLabel(edge), () => selectConnection(edge), () => preview("connection", edge));
+    interactive(group, connectionLabel(edge), () => selectConnection(edge));
     svg.append(group);
   }
   for (const node of layout.nodes) {
@@ -98,7 +96,7 @@ export function renderNeighborhood(container, layout, { selectNode, selectConnec
     group.append(svgElement("text", { x: node.x + 8, y: node.y + 23 }, short));
     group.append(svgElement("text", { x: node.x + 8, y: node.y + 43, class: "graph-kind" },
       node.target_unspecified ? "target unspecified" : node.kind === "group" ? `${node.member_kind} group` : node.kind));
-    interactive(group, `Inspect ${node.kind}: ${node.identifier}`, () => selectNode(node), () => preview("node", node));
+    interactive(group, `Inspect ${node.kind}: ${node.identifier}`, () => selectNode(node));
     svg.append(group);
   }
   const previous = container.querySelector("svg");

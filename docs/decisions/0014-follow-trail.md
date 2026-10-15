@@ -3,9 +3,13 @@
 2026-10-15. Implemented for review, dependent on PR #15.
 
 The owner requested a way to open a view of everything connected to a hovered node
-or connection. Add an explicit Follow trail action above each diagram. Hover,
-keyboard focus and selection prepare its candidate without changing the graph or
-evidence. Clicking Follow activates the candidate and selects its anchor for details.
+or connection. Add an explicit Follow trail action above each diagram.
+
+Updated 2026-10-15 after owner feedback: only click or Enter/Space selection
+prepares the target. Hover and keyboard focus no longer change it, preventing
+accidental retargeting while traveling to Follow trail. The button stays disabled
+until selection. Clicking Follow activates the selected target and retains its
+anchor for details. This applies to main/child diagrams and connection lists.
 
 A node trail retains all incident links and their endpoints. A connection trail
 retains exactly that link and its endpoints. Preserve the focused identity as context
@@ -27,6 +31,7 @@ available through their existing controls. No network query is needed to isolate
 the diagram; selecting a connection uses the ordinary evidence query.
 
 Tests cover complete incident links, separate outcomes, stable IDs, self-loops,
-non-summed counts, reset/return and preview without activation. Browser checks cover
+non-summed counts, reset/return and selection without activation, plus renderer interaction regression
+coverage for hover/focus stability and click/Enter/Space activation. Browser checks cover
 connection evidence, node isolation, full return, scope reset and 430px containment.
 Native hover and broader screen-reader/zoom audits remain manual.

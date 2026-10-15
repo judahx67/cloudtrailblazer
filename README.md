@@ -76,8 +76,9 @@ The SVG renderer accepts up to the server ceiling of 500 nodes and 1,500 connect
 with scrolling and no omitted returned relationships. Graphs fill the available
 width. Drag a Source IPs/Identity/Targets header to move its column; drag Width to
 resize its nodes. Left/Right (Shift for larger steps) and Home/End also adjust them.
-Reset columns restores automatic sizing; Reset layout resets both diagrams. Hover, focus or select a graph item, then use Follow trail to isolate its direct
-relationships (or just the selected connection and endpoints). Full neighborhood
+Reset columns restores automatic sizing; Reset layout resets both diagrams. Select a graph item with click or Enter/Space, then use Follow trail to isolate its direct
+relationships (or just the selected connection and endpoints). Hovering or moving
+keyboard focus does not change the chosen target. Full neighborhood
 returns to the complete diagram. This follows observed relationships in the current
 diagram only, with the same supporting-event routes; time changes clear the trail. Column
 settings are independent for the main graph and child window, and reset on reload. The separate 100,000-event scan

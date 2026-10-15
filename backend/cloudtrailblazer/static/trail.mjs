@@ -28,7 +28,7 @@ export class TrailView {
     this.reset();
   }
   reset(graph = null) { this.graph = graph; this.focus = null; this.candidate = null; this.positions = new Map(); this.paint(); }
-  preview(kind, item) {
+  select(kind, item) {
     if (!this.graph) return;
     this.candidate = { kind, id: item.id, label: kind === "node" ? item.label : item.action }; this.paint();
   }
@@ -38,6 +38,6 @@ export class TrailView {
     this.label.textContent = this.focus ? `Trail: ${this.focus.label}: ${this.focus.event_count} supporting events`
       : this.candidate ? `${this.candidate.kind === "node" ? "Node" : "Connection"}: ${this.candidate.label}` : "";
     this.label.title = `${this.label.textContent}\n` + "Direct observed relationships in this diagram’s current scope. Node details retain neighborhood totals.";
-    this.followButton.title = this.candidate ? `Follow ${this.candidate.label}` : "Hover, focus or select a node or connection";
+    this.followButton.title = this.candidate ? `Follow ${this.candidate.label}` : "Select a node or connection with click or Enter/Space";
   }
 }
