@@ -42,9 +42,10 @@
         <p id="identity-status" class="notice" role="status"></p>
         <div id="identity-list" class="identity-list" tabindex="0" role="region" aria-label="Identity results"></div>
         <div class="identity-progress muted" id="identities-count" role="status"></div>
-        <div class="panel-heading"><h3>Neighborhood</h3><span id="graph-count" class="muted"></span></div>
+        <div class="panel-heading"><h3>Neighborhood</h3><button id="reset-columns" title="Restore automatic graph column positions and widths">Reset columns</button><span id="graph-count" class="muted"></span></div>
         <p id="graph-status" class="notice" role="status">Choose a case.</p>
         <div id="graph-stage" class="graph-stage">
+          <div class="trail-controls"><button id="follow-trail" disabled>Follow trail</button><button id="trail-back" hidden>Full neighborhood</button><span id="trail-label" class="muted" role="status"></span></div>
           <div id="graph-canvas" class="graph-canvas"></div>
 
         </div>
@@ -80,10 +81,10 @@
   </div>
   <section id="subgraph-window" class="subgraph-window" aria-label="Subgraph window" hidden>
     <div id="subgraph-toolbar" class="subgraph-toolbar" title="Drag the header to move this window"><button id="subgraph-back" title="Return to the main graph">Back</button><h3 id="subgraph-title"></h3><button id="subgraph-close">Close</button></div>
-    <div class="subgraph-controls"><button id="subgraph-move" aria-label="Move subgraph window" title="Drag or use Arrow keys">Move</button><button id="subgraph-resize" aria-label="Resize subgraph window" title="Use Arrow keys; or drag the lower-right corner">Resize</button><span id="subgraph-count" class="muted"></span></div>
+    <div class="subgraph-controls"><button id="subgraph-move" aria-label="Move subgraph window" title="Drag or use Arrow keys">Move</button><button id="subgraph-resize" aria-label="Resize subgraph window" title="Use Arrow keys; or drag the lower-right corner">Resize</button><button id="reset-group-columns" title="Restore this diagram’s column layout">Reset columns</button><span id="subgraph-count" class="muted"></span></div>
     <form id="subgraph-search-form" class="search-controls"><label class="sr-only" for="subgraph-search">Group member search</label><input id="subgraph-search" type="search" placeholder="Member name or locator"><button id="subgraph-search-submit">Search</button></form>
     <p id="subgraph-status" class="notice" role="status"></p>
-    <div class="subgraph-content" tabindex="0" role="region" aria-label="Group member diagram"><div id="subgraph-members" class="identity-list"></div><div id="subgraph-canvas" class="graph-canvas"></div><div id="subgraph-connections" class="connection-list" role="group" aria-label="Subgraph connections"></div></div>
+    <div class="subgraph-content" tabindex="0" role="region" aria-label="Group member diagram"><div id="subgraph-members" class="identity-list"></div><div class="trail-controls"><button id="follow-group-trail" disabled>Follow trail</button><button id="group-trail-back" hidden>Full neighborhood</button><span id="group-trail-label" class="muted" role="status"></span></div><div id="subgraph-canvas" class="graph-canvas"></div><div id="subgraph-connections" class="connection-list" role="group" aria-label="Subgraph connections"></div></div>
     <div class="pager"><button id="members-prev" aria-label="Previous group members" disabled>Prev</button><span id="members-page" class="muted"></span><button id="members-next" aria-label="Next group members" disabled>Next</button></div>
   </section>
   <footer><span id="workspace-status" role="status">Read only</span><span class="muted">CloudTrail &gt; recorded evidence</span></footer>

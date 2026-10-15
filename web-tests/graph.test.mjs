@@ -39,9 +39,20 @@ test("surviving node positions and connection labels stay fixed as scope shrinks
 
 test("dense neighborhoods fail explicitly without changing position history or dropping links", () => {
   const positions = new Map();
-  assert.throws(() => layoutNeighborhood(graph(Array.from({ length: 51 }, (_, i) => node(String(i))), []), positions), /View limit exceeded/);
-  assert.throws(() => layoutNeighborhood(graph([node("actor", "identity")], Array.from({ length: 81 }, (_, i) => edge(String(i), "actor", "actor"))), positions), /View limit exceeded/);
+  assert.throws(() => layoutNeighborhood(graph(Array.from({ length: 501 }, (_, i) => node(String(i))), []), positions), /Render limit exceeded/);
+  assert.throws(() => layoutNeighborhood(graph([node("actor", "identity")], Array.from({ length: 1501 }, (_, i) => edge(String(i), "actor", "actor"))), positions), /Render limit exceeded/);
   assert.equal(positions.size, 0);
+});
+
+test("dense grouped output preserves every node and connection above the detail threshold", () => {
+  const nodes = [node("actor", "identity"), ...Array.from({ length: 213 }, (_, i) =>
+    ({ ...node(`bucket-${i}`, "group"), group_type: "target" }))];
+  const connections = Array.from({ length: 233 }, (_, i) => edge(`activity-${i}`, "actor", `bucket-${i % 213}`));
+  const input = graph(nodes, connections);
+  const layout = layoutNeighborhood(input);
+  assert.equal(layout.nodes.length, 214);
+  assert.deepEqual(new Set(layout.connections.map(item => item.id)), new Set(connections.map(item => item.id)));
+  assert.equal(new Set(layout.connections.map(item => `${item.label.x}:${item.label.y}`)).size, 233);
 });
 
 test("recorded self-targets have visible loops and empty scopes are valid", () => {
