@@ -1,5 +1,6 @@
 import { LatestRequest, evidenceInScope } from "./client.mjs";
 import { IdentityWorkbench } from "./identity-workbench.mjs";
+import { TimeSlider } from "./time-slider.mjs";
 import { PanelLayout } from "./panel-layout.mjs";
 import { byId, element, notice, pager, disablePager, renderDetails } from "./ui.mjs";
 
@@ -23,6 +24,7 @@ function casePath(suffix = "") {
 }
 
 function timeControls(enabled) {
+  timeSlider.setEnabled(enabled);
   for (const id of ["time-start", "time-end", "apply-time", "reset-time"]) {
     byId(id).disabled = !enabled;
   }
@@ -129,6 +131,7 @@ async function selectCase(item) {
     byId("time-end").value = state.summary.time_range.end || "";
     state.bounds = { ...state.summary.time_range };
     byId("case-count").title = `${state.summary.source_count} sources: ${state.summary.duplicate_count} duplicate occurrences`;
+    timeSlider.configure(state.summary.time_range);
     timeControls(true);
     for (const id of ["view-identity", "view-events"]) byId(id).disabled = false;
     await loadEvents();
@@ -350,29 +353,36 @@ async function loadEvidence() {
 }
 
 byId("refresh-cases").addEventListener("click", () => loadCases());
-byId("time-form").addEventListener("submit", (event) => {
-  event.preventDefault();
+function applyTime() {
   if (!state.summary) return;
   state.eventOffset = 0;
   state.bounds = Object.fromEntries(["start", "end"].map(
     (bound) => [bound, byId(`time-${bound}`).value.trim() || null]));
   byId("time-draft").textContent = "";
+  timeSlider.sync();
   loadEvents();
+}
+function markTimeDraft() {
+  const changed = ["start", "end"].some((key) =>
+    (byId(`time-${key}`).value.trim() || null) !== (state.bounds[key] || null));
+  byId("time-draft").textContent = changed ? "Unapplied time edits" : "";
+}
+const timeSlider = new TimeSlider({
+  start: byId("slider-start"), end: byId("slider-end"),
+  fields: { start: byId("time-start"), end: byId("time-end") },
+  status: byId("slider-status"), track: byId("time-track"),
+  onPreview: markTimeDraft, onCommit: applyTime,
 });
+byId("time-form").addEventListener("submit", (event) => { event.preventDefault(); applyTime(); });
 byId("reset-time").addEventListener("click", () => {
+  if (!state.summary) return;
   byId("time-start").value = state.summary.time_range.start || "";
   byId("time-end").value = state.summary.time_range.end || "";
-  state.eventOffset = 0;
-  state.bounds = { ...state.summary.time_range };
-  byId("time-draft").textContent = "";
-  loadEvents();
+  timeSlider.configure(state.summary.time_range);
+  applyTime();
 });
 for (const bound of ["start", "end"]) {
-  byId(`time-${bound}`).addEventListener("input", () => {
-    const changed = ["start", "end"].some((key) =>
-      (byId(`time-${key}`).value.trim() || null) !== (state.bounds[key] || null));
-    byId("time-draft").textContent = changed ? "Unapplied time edits" : "";
-  });
+  byId(`time-${bound}`).addEventListener("input", () => { timeSlider.sync(); markTimeDraft(); });
 }
 for (const [prefix, key, size, loader] of [
   ["cases", "caseOffset", CASE_PAGE, loadCases],

@@ -10,7 +10,7 @@ state document and the accepted decisions; the local anchor is not distributed.
 The backend imports AWS logs, preserves evidence and projects relationships. A local
 Events inspector opens cases and original evidence. Identity focus renders a direct
 observed neighborhood and opens connection-specific event pages in the shared inspector.
-Case overview, dense grouping and Suzaku detection jobs are subsequent milestones.
+Case overview and Suzaku detection jobs are subsequent milestones.
 
 Each coding increment uses a purpose-based branch (`feature/`, `fix/`, `docs/`,
 `cicd/`) and a separate pull request for review. Do not use the `codex/` prefix here.
@@ -47,15 +47,30 @@ source references. Enter/Space select graph items. Use Events for the full case 
 Drag the panel dividers to resize cases, investigation and evidence. Arrow keys and
 Home/End resize focused dividers; Reset layout restores defaults. On narrower screens,
 panels stack and the dividers adjust height. Scroll regions also accept keyboard focus.
-Time inputs accept ISO timestamps
+Drag the two time handles to narrow or widen the case range; changes apply on release.
+The upper handle sets Start and the lower handle sets End. Arrow keys adjust, and
+Home/End move toward the full case limits without crossing the other bound.
+Compact time inputs accept ISO timestamps
 with explicit offsets; Apply updates the range and Reset restores the full case.
-Unapplied edits do not affect paging. Evidence outside the applied range is marked.
+Unapplied edits do not affect paging. Slider steps are approximate; use the fields
+for exact microsecond bounds. Invalid, open or out-of-case drafts disable the slider
+until corrected or reset. Empty cases have no slider range. Evidence outside the applied range is marked.
 
 Cases default to `.local/cases`. `--data-dir <path>` before `serve` selects another
 root; `serve --port <port>` changes the port. The CLI binds to loopback only. Stop it
 with Ctrl+C. Import remains a CLI operation; the web inspector is read-only.
-The SVG neighborhood allows 50 nodes and 80 connections. Dense views automatically
-try service/resource and source-IP groups. Select a group, then Open group in the
+Raw views above 50 nodes or 80 connections automatically try service/resource and
+source-IP groups. These are detail thresholds, not grouped-view rejection limits.
+The SVG renderer accepts up to the server ceiling of 500 nodes and 1,500 connections,
+with scrolling and no omitted returned relationships. Graphs fill the available
+width. Drag a Source IPs/Identity/Targets header to move its column; drag Width to
+resize its nodes. Left/Right (Shift for larger steps) and Home/End also adjust them.
+Reset columns restores automatic sizing; Reset layout resets both diagrams. Hover, focus or select a graph item, then use Follow trail to isolate its direct
+relationships (or just the selected connection and endpoints). Full neighborhood
+returns to the complete diagram. This follows observed relationships in the current
+diagram only, with the same supporting-event routes; time changes clear the trail. Column
+settings are independent for the main graph and child window, and reset on reload. The separate 100,000-event scan
+budget remains in place. Select a group, then Open group in the
 inspector to browse its members in one in-app window. Search or page 20 members at
 a time; member connections use the same supporting-event inspector and applied time
 range. Back, Close or Escape return to the parent. Drag the window header or Move,
