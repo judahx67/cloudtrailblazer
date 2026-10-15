@@ -1,5 +1,8 @@
 // This first renderer handles a direct identity neighborhood, not a case overview.
-export const VIEW_LIMITS = Object.freeze({ nodes: 50, connections: 80 });
+// Small raw views stay detailed; these are grouping thresholds, not rejection limits.
+export const DETAIL_LIMITS = Object.freeze({ nodes: 50, connections: 80 });
+// Match the existing server output ceiling. A returned grouped view remains complete.
+export const VIEW_LIMITS = Object.freeze({ nodes: 500, connections: 1500 });
 
 export function connectionLabel(edge) {
   const relation = edge.kind === "observed_source" ? "Source observed" : "Action";
@@ -9,7 +12,7 @@ export function connectionLabel(edge) {
 
 export function layoutNeighborhood(graph, positions = new Map()) {
   if (graph.nodes.length > VIEW_LIMITS.nodes || graph.connections.length > VIEW_LIMITS.connections) {
-    throw new Error("View limit exceeded (50 nodes / 80 connections): narrow the time range or member search.");
+    throw new Error("Render limit exceeded (500 nodes / 1500 connections): refine the identity or group member search.");
   }
   const focus = graph.nodes.find(node => node.id === graph.scope.identity_id);
   if (!focus && graph.nodes.length) throw new Error("Selected identity is missing from this neighborhood");

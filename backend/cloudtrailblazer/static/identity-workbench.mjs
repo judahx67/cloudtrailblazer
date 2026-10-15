@@ -1,5 +1,6 @@
 import { LatestRequest } from "./client.mjs";
-import { connectionLabel, layoutNeighborhood, renderNeighborhood, VIEW_LIMITS } from "./graph.mjs";
+import { connectionLabel, layoutNeighborhood, renderNeighborhood } from "./graph.mjs";
+import { queryNeighborhood } from "./neighborhood-query.mjs";
 import { byId, element, notice, pager, disablePager } from "./ui.mjs";
 import { SubgraphWindow } from "./subgraph-window.mjs";
 import { ScrollPages } from "./scroll-pages.mjs";
@@ -240,19 +241,13 @@ export class IdentityWorkbench {
     const start = performance.now();
     try {
       const query = this.query({identity: this.identity.id});
-      let graph;
-      try { graph = await this.requests.graph.get(`${this.path("/graph")}?${query}`); }
-      catch (error) {
-        if (error.status !== 413 || error.code !== "projection_limit") throw error;
-        graph = await this.requests.graph.get(`${this.path("/grouped-graph")}?${query}`);
-      }
-      if (graph.nodes.length > VIEW_LIMITS.nodes || graph.connections.length > VIEW_LIMITS.connections) {
-        graph = await this.requests.graph.get(`${this.path("/grouped-graph")}?${query}`);
-      }
+      const graph = await queryNeighborhood(this.requests.graph,
+        `${this.path("/graph")}?${query}`, `${this.path("/grouped-graph")}?${query}`);
       const queried = performance.now();
       this.draw(graph);
       const laidOut = performance.now();
-      byId("graph-count").textContent = `${graph.event_count} events: ${graph.nodes.length} nodes: ${graph.connections.length} links`;
+      const grouped = graph.nodes.some(node => node.kind === "group");
+      byId("graph-count").textContent = `${grouped ? "Grouped: " : ""}${graph.event_count} events: ${graph.nodes.length} nodes: ${graph.connections.length} links`;
       const finished = performance.now();
       byId("graph-count").title = "Unique events: one event may support several links.";
       byId("graph-count").dataset.timings = JSON.stringify({ queryMs: queried-start,
