@@ -81,6 +81,19 @@ def test_evidence_precision_and_occurrence_pages(case):
         assert [ref["ordinal"] for ref in next_page["occurrences"]] == [2]
 
 
+def test_activity_search_http_contract(case):
+    store, case_id, _ = case
+    with client(store) as http:
+        path = f"/api/cases/{case_id}/events"
+        data = http.get(path, params={"search": "  accessdenied  ", "outcome": "failed"}).json()
+        assert data["total"] == 2
+        assert data["filters"] == {"search": "accessdenied", "outcome": "failed"}
+        assert http.get(path, params={"search": "one"}).json()["total"] == 1
+        assert http.get(path, params={"outcome": "no_error_reported"}).json()["total"] == 0
+        assert http.get(path, params={"search": "x" * 513}).status_code == 400
+        assert http.get(path, params={"outcome": "success"}).status_code == 400
+
+
 def test_relationship_endpoints_scope_and_budget_errors(case):
     store, case_id, _ = case
     with client(store) as http:

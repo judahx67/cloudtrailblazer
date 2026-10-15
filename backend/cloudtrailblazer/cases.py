@@ -287,12 +287,28 @@ class CaseStore:
         offset: int = 0,
         start: str | None = None,
         end: str | None = None,
+        search: str = "",
+        outcome: str | None = None,
     ) -> dict:
         """Bounded event summaries and the total matching count for navigation."""
         self.inspect(case_id)
         if not 1 <= limit <= 500 or offset < 0:
             raise ValueError("limit must be 1..500 and offset must be nonnegative")
+        if len(search) > 512:
+            raise ValueError("Activity search must be at most 512 characters")
+        if outcome not in (None, "failed", "no_error_reported"):
+            raise ValueError("Outcome must be failed or no_error_reported")
+        search = search.strip()
         where, values = _time_filter(start, end)
+        filters = []
+        if search:
+            filters.append("contains(lower(CAST(raw_json AS VARCHAR)), lower(?))")
+            values.append(search)
+        if outcome:
+            filters.append("outcome = ?")
+            values.append(outcome)
+        if filters:
+            where += (" AND " if where else " WHERE ") + " AND ".join(filters)
         sql = """SELECT event_key, event_id, event_time, event_source, event_name,
                         outcome, account_id, actor_arn, source_ip, region FROM events"""
         sql += where + " ORDER BY event_time, event_key LIMIT ? OFFSET ?"
@@ -307,6 +323,7 @@ class CaseStore:
         return {
             "total": total,
             "items": rows,
+            "filters": {"search": search, "outcome": outcome},
             "scope": {
                 "start": _timestamp(start).isoformat() if start is not None else None,
                 "end": _timestamp(end).isoformat() if end is not None else None,

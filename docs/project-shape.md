@@ -3,12 +3,17 @@
 Status: architecture proposal with case/relationship modules and a local Events
 inspector implemented on 2026-10-13.
 See [decision 0001](decisions/0001-case-foundation.md) for the accepted scope and limits.
-An initial Identity focus SVG neighborhood is implemented; Case overview, dense groups
-and Suzaku job integration remain future work.
+Identity focus, dense groups, adjustable columns and focused trails are implemented;
+Case overview and Suzaku job integration remain future work.
 See [the consolidated graph design](design/graph-workbench.md) for interview choices
 and its review status; it supersedes the early interaction proposals below.
 
 ## Direction
+
+The owner selected security investigation as the primary workflow on 2026-10-15.
+Cloud-admin troubleshooting is a secondary use of the same evidence tools.
+See [the workflow decision](decisions/0015-security-activity-search.md) for the first
+clue-based search increment and remaining workflow gaps.
 
 Build a local-first web workbench for AWS CloudTrail investigations. Keep Suzaku as the detection engine, invoked through its CLI. Build relationship extraction and graph projection in the wrapper. Start with AWS; defer Azure and Google Workspace until the CloudTrail interaction model works.
 
