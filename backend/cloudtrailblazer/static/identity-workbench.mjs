@@ -1,5 +1,6 @@
 import { LatestRequest } from "./client.mjs";
 import { connectionLabel, layoutNeighborhood, renderNeighborhood } from "./graph.mjs";
+import { GraphColumns } from "./graph-columns.mjs";
 import { queryNeighborhood } from "./neighborhood-query.mjs";
 import { byId, element, notice, pager, disablePager } from "./ui.mjs";
 import { SubgraphWindow } from "./subgraph-window.mjs";
@@ -13,6 +14,10 @@ export class IdentityWorkbench {
     this.callbacks = callbacks;
     this.requests = { identities: new LatestRequest(), graph: new LatestRequest(), group: new LatestRequest() };
     this.positions = new Map();
+    this.diagrams = {};
+    this.columns = Object.fromEntries(["main", "group"].map(origin => [origin,
+      new GraphColumns(byId(origin === "main" ? "graph-canvas" : "subgraph-canvas"),
+        byId(origin === "main" ? "reset-columns" : "reset-group-columns"), () => this.redrawColumns(origin))]));
     this.identity = null;
     this.search = "";
     this.identityPages = new ScrollPages((offset, limit) => this.requests.identities.get(
@@ -140,7 +145,8 @@ export class IdentityWorkbench {
 
   draw(graph, origin = "main") {
     const child = origin === "group";
-    const layout = layoutNeighborhood(graph, child ? this.groupPositions : this.positions);
+    this.diagrams[origin] = graph;
+    const layout = layoutNeighborhood(graph, child ? this.groupPositions : this.positions, this.columns[origin].prepare());
     renderNeighborhood(byId(child ? "subgraph-canvas" : "graph-canvas"), layout, {
       selectNode: node => this.select("node", node, origin),
       selectConnection: edge => this.select("connection", edge, origin),
@@ -158,6 +164,23 @@ export class IdentityWorkbench {
       list.append(button);
     }
     return layout;
+  }
+
+  redrawColumns(origin) {
+    const container = byId(origin === "main" ? "graph-canvas" : "subgraph-canvas");
+    if (!this.diagrams[origin] || !container.querySelector("svg")) return;
+    const selected = [...container.querySelectorAll('[aria-pressed="true"]')].map(item =>
+      ({ node: item.dataset.nodeId, edge: item.dataset.connectionId }));
+    const layout = layoutNeighborhood(this.diagrams[origin], origin === "main" ? this.positions : this.groupPositions,
+      this.columns[origin].model);
+    renderNeighborhood(container, layout, {
+      selectNode: node => this.select("node", node, origin),
+      selectConnection: edge => this.select("connection", edge, origin),
+    });
+    for (const item of container.querySelectorAll("[role=button]")) {
+      item.setAttribute("aria-pressed", String(selected.some(key => key.node && key.node === item.dataset.nodeId
+        || key.edge && key.edge === item.dataset.connectionId)));
+    }
   }
 
   clearGroupView(message) {

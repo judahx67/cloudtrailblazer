@@ -180,3 +180,10 @@ footer { min-height: 28px; padding: 0 12px; border-top: 1px solid var(--line); f
 }
 
 #slider-status:empty, #time-draft:empty { display: none; }
+
+.graph-column-controls { position: sticky; top: 0; height: 38px; z-index: 2; background: var(--background); }
+.graph-column-control { position: absolute; top: 4px; display: flex; gap: 3px; }
+.graph-column-control button { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; touch-action: none; }
+.column-move { flex: 1; min-width: 0; cursor: ew-resize; }
+.column-resize { padding: 3px 5px; cursor: ew-resize; }
+#reset-columns { margin-left: auto; font-size: 12px; }

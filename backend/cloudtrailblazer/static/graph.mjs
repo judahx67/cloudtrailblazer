@@ -1,3 +1,4 @@
+import { ColumnLayout } from "./graph-columns.mjs";
 // This first renderer handles a direct identity neighborhood, not a case overview.
 // Small raw views stay detailed; these are grouping thresholds, not rejection limits.
 export const DETAIL_LIMITS = Object.freeze({ nodes: 50, connections: 80 });
@@ -10,7 +11,7 @@ export function connectionLabel(edge) {
   return `${relation}: ${edge.action}: ${edge.event_count} events: ${edge.outcome === "failed" ? "failed attempt" : "no error reported"}${edge.service ? `: ${edge.service}` : ""}${endpoints}`;
 }
 
-export function layoutNeighborhood(graph, positions = new Map()) {
+export function layoutNeighborhood(graph, positions = new Map(), columns = new ColumnLayout()) {
   if (graph.nodes.length > VIEW_LIMITS.nodes || graph.connections.length > VIEW_LIMITS.connections) {
     throw new Error("Render limit exceeded (500 nodes / 1500 connections): refine the identity or group member search.");
   }
@@ -25,7 +26,8 @@ export function layoutNeighborhood(graph, positions = new Map()) {
   const nodes = [...graph.nodes].sort((a, b) => a.id.localeCompare(b.id)).map(node => {
     const lane = node.kind === "ip" || node.group_type === "source" ? "left" : "right";
     const isFocus = node.id === focus?.id;
-    return { ...node, x: isFocus ? 254 : lane === "left" ? 12 : 496,
+    const column = columns.columns[isFocus ? 1 : lane === "left" ? 0 : 2];
+    return { ...node, x: column.x, width: column.width,
       y: isFocus ? 80 : 80 + slot(`node:${node.id}`, lane) * 110 };
   });
   const lookup = new Map(nodes.map(node => [node.id, node]));
@@ -34,16 +36,17 @@ export function layoutNeighborhood(graph, positions = new Map()) {
     if (!source || !target) throw new Error("Connection refers to a missing node");
     const incoming = edge.kind === "observed_source";
     const row = slot(`edge:${edge.id}`, incoming ? "incoming" : "outgoing");
-    const label = { x: incoming ? 194 : 436, y: 110 + row * 40 };
+    const left = columns.columns[incoming ? 0 : 1], right = columns.columns[incoming ? 1 : 2];
+    const label = { x: (left.x + left.width + right.x) / 2, y: 110 + row * 40 };
     // A recorded self-target uses a visible loop instead of a zero-length arrow.
     const self = source.id === target.id;
     const points = self
-      ? `${source.x + 122},${source.y + 29} ${label.x},${source.y + 29} ${label.x},${label.y} ${label.x},${label.y + 35} ${source.x + 61},${label.y + 35} ${source.x + 61},${source.y + 58}`
-      : `${source.x + 122},${source.y + 29} ${label.x},${label.y} ${target.x},${target.y + 29}`;
+      ? `${source.x + source.width},${source.y + 29} ${label.x},${source.y + 29} ${label.x},${label.y} ${label.x},${label.y + 35} ${source.x + source.width / 2},${label.y + 35} ${source.x + source.width / 2},${source.y + 58}`
+      : `${source.x + source.width},${source.y + 29} ${label.x},${label.y} ${target.x},${target.y + 29}`;
     return { ...edge, label, points, number: row + 1, incoming,
       sourceIdentifier: source.identifier, targetIdentifier: target.identifier };
   });
-  return { nodes, connections, width: 630,
+  return { nodes, connections, width: columns.width,
     height: Math.max(320, ...nodes.map(node => node.y + 90), ...connections.map(edge => edge.label.y + 75)) };
 }
 
@@ -74,9 +77,6 @@ export function renderNeighborhood(container, layout, { selectNode, selectConnec
     refX: 7, refY: 4, orient: "auto", markerUnits: "userSpaceOnUse" });
   marker.append(svgElement("path", { d: "M0,0 L8,4 L0,8 Z", class: "graph-arrow" }));
   const defs = svgElement("defs"); defs.append(marker); svg.append(defs);
-  for (const [x, label] of [[12, "Source IPs"], [254, "Identity"], [496, "Targets"]]) {
-    svg.append(svgElement("text", { x, y: 28, class: "graph-column" }, label));
-  }
   for (const edge of layout.connections) {
     const group = svgElement("g", { class: `graph-edge${edge.outcome === "failed" ? " failed" : ""}`,
       "data-connection-id": edge.id });
@@ -90,13 +90,15 @@ export function renderNeighborhood(container, layout, { selectNode, selectConnec
   }
   for (const node of layout.nodes) {
     const group = svgElement("g", { class: "graph-node", "data-node-id": node.id });
-    group.append(svgElement("rect", { x: node.x, y: node.y, width: 122, height: 58 }));
-    const short = node.label.length > 16 ? `${node.label.slice(0, 15)}…` : node.label;
+    group.append(svgElement("rect", { x: node.x, y: node.y, width: node.width, height: 58 }));
+    const characters = Math.max(16, Math.floor((node.width - 16) / 7));
+    const short = node.label.length > characters ? `${node.label.slice(0, characters - 1)}…` : node.label;
     group.append(svgElement("text", { x: node.x + 8, y: node.y + 23 }, short));
     group.append(svgElement("text", { x: node.x + 8, y: node.y + 43, class: "graph-kind" },
       node.target_unspecified ? "target unspecified" : node.kind === "group" ? `${node.member_kind} group` : node.kind));
     interactive(group, `Inspect ${node.kind}: ${node.identifier}`, () => selectNode(node));
     svg.append(group);
   }
-  container.replaceChildren(svg);
+  const previous = container.querySelector("svg");
+  if (previous) previous.replaceWith(svg); else container.append(svg);
 }
