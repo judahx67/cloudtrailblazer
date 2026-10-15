@@ -3,8 +3,8 @@
 Last updated: 2026-10-15. Latest main checkpoint: `e614b93` (PR #11 merged).
 Neutral white/gray surfaces, subtle blue selection and quieter borders are the
 owner-selected baseline. PR #12 was closed because #11 was sufficient.
-Current increment: `feature/graph-columns`, dependent on still-open PR #14
-(`fix/dense-grouped-graphs`), which depends on PR #13. Retarget this increment to main
+Current increment: `feature/follow-trail`, dependent on still-open PR #15
+(`feature/graph-columns`), which depends on PRs #14/#13. Retarget this increment to main
 after its prerequisites reach main; do not merge into a feature-branch base.
 No PR is auto-merged.
 
@@ -19,6 +19,8 @@ fixes rejection of valid dense grouped graphs: the 50-node/80-link detail thresh
 now triggers grouping, while rendering accepts the existing 500-node/1,500-link
 server ceiling. The current increment fills available horizontal graph space and
 adds bounded column move/width controls, shared by main and child diagrams.
+Follow trail now isolates a node’s direct neighbors or a single connection and
+its endpoints, with a Full neighborhood return and unchanged evidence routes.
 Group fallback runs once; every returned relationship remains visible
 through scrolling and keeps its evidence path.
 
@@ -96,6 +98,11 @@ Implemented capabilities:
   keyboard alternatives. Columns stay ordered and separated, links remain attached,
   and node labels use the available width. Reset columns restores automatic sizing;
   Reset layout resets both diagrams. Main/child settings are independent and tab-local.
+- Hover, keyboard-focus or select a node/connection to prepare Follow trail. Activate
+  it to isolate direct incident links for a node or exactly one link and its endpoints.
+  Counts use the selected item’s unique supporting-event count, not summed link counts.
+  Return to Full neighborhood restores the original diagram; scope/focus/case/member
+  refresh clears the local trail. This does not traverse beyond the loaded neighborhood.
 - Prepare two pinned public corpora locally with byte/hash/archive/nesting checks,
   without replaying attacks, executing accompanying files or following log URLs.
   See [the corpus guide](testing/cloudtrail-datasets.md) for provenance and commands.
@@ -111,6 +118,12 @@ See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
 
 Latest verification on 2026-10-15 (earlier browser measurements below remain historical):
 
+- Trail checks: direct neighbors, separate outcomes, self-loops, exact evidence IDs,
+  non-summed counts, missing targets and reset/return behavior. Browser checks confirm
+  keyboard focus only prepares the action, a connection isolates 2 nodes/1 link with
+  source evidence, a node isolates 2 nodes/4 links, Full neighborhood restores 3/8,
+  and Reset clears the trail. At 430px there was no page overflow; console was clear.
+  Native hover behavior and the broader accessibility audit remain manual.
 - Graph-column checks: automatic wide-panel sizing, constrained movement/width,
   custom reflow on shrink, pointer capture/release, keyboard controls and reset.
   Browser checks used the 214-node/233-link public-log graph at 1800px and 430px;
@@ -138,7 +151,7 @@ Latest verification on 2026-10-15 (earlier browser measurements below remain his
   grouping/HTTP and self-target members.
   Existing evidence/identity semantics and new discovery, pagination, exact full-case
   bounds, decimal text, typed errors, read-only/local policies and assets are checked.
-- All 37 client tests passed, including tab-wide geometry/viewport shrink, scroll-loader serialization, stale success/error
+- All 40 client tests passed, including tab-wide geometry/viewport shrink, scroll-loader serialization, stale success/error
   resets, retained page/retry offsets and empty/end states, evidence-divider keyboard/
   pointer direction parity in wide/medium/narrow layouts, pointer capture/cancellation, header dragging,
   panel minimum space/reset/responsive modes, window containment, source group layout,
@@ -154,7 +167,7 @@ Latest verification on 2026-10-15 (earlier browser measurements below remain his
   overflow with populated evidence. No browser console warnings/errors were recorded.
   These are targeted checks, not a full accessibility audit; screen-reader and browser
   zoom verification remain open.
-- The wheel built successfully with all fourteen client assets and no local cases,
+- The wheel built successfully with all fifteen client assets and no local cases,
   environments, caches or upstream checkout included.
 - Manual browser verification used all 33 pinned Suzaku AWS events. The denied
   DeleteTrail event opened its AccessDenied JSON and original source/hash/ordinal.
@@ -227,7 +240,7 @@ wheel inspection confirmed it is excluded.
 
 The local preview runs on `http://127.0.0.1:8765`, reading `.local/preview-cases`.
 It includes pinned sample/public corpus cases and clearly labeled synthetic/empty/
-graph-paging/dense/long-value checks. The current screenshot is `.local/graph-columns.jpg`; preview data
+graph-paging/dense/long-value checks. The current screenshot is `.local/follow-trail.jpg`; preview data
 and images are ignored.
 
 The earlier hypothetical UI comparison demonstrated design interactions only. Its
@@ -262,7 +275,7 @@ accessibility considered in every UI increment.
   time changes can leave empty lanes; a deliberate new focus resets that history.
 - The wrapper distribution/license decision remains open; upstream Suzaku uses AGPLv3.
 - `AGENTS.md` is ignored now but remains in earlier commits; ignoring does not erase history.
-- Panel and visual-polish work is merged; PRs #13/#14 and adjustable columns await review. Import cost blocks practical UI validation of
+- Panel and visual-polish work is merged; PRs #13–#15 and follow-trail work await review. Import cost blocks practical UI validation of
   the larger corpus until the next performance increment.
 
 ## Recommended next increment
@@ -299,3 +312,4 @@ Expand remain separate increments.
 | 2026-10-14 | Time slider (`feature/time-slider`) | Two handles, compact exact fields, commit-on-release shared scope, exact microsecond clamping and clearer identity buttons. PR #11 visual baseline merged; #12 documentation PR closed by owner. |
 | 2026-10-15 | Dense grouped graph fix (`fix/dense-grouped-graphs`) | Separates 50/80 detail threshold from 500/1,500 render ceiling; fixes duplicate grouping retry; reproduces and renders 377-event public-log window with all 214 nodes/233 links. Dependent on PR #13. |
 | 2026-10-15 | Adjustable graph columns (`feature/graph-columns`) | Full panel width, independent main/child column movement and node widths, captured dragging, keyboard/reset controls, attached links and responsive bounds; dependent on PR #14. |
+| 2026-10-15 | Follow trail (`feature/follow-trail`) | Hover/focus/selection prepares an explicit isolated node/link view, direct relationships and unchanged evidence, compact positions, full-view return and scope reset; dependent on PR #15. |

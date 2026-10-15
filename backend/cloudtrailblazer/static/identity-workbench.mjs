@@ -1,5 +1,6 @@
 import { LatestRequest } from "./client.mjs";
 import { connectionLabel, layoutNeighborhood, renderNeighborhood } from "./graph.mjs";
+import { TrailView } from "./trail.mjs";
 import { GraphColumns } from "./graph-columns.mjs";
 import { queryNeighborhood } from "./neighborhood-query.mjs";
 import { byId, element, notice, pager, disablePager } from "./ui.mjs";
@@ -14,7 +15,21 @@ export class IdentityWorkbench {
     this.callbacks = callbacks;
     this.requests = { identities: new LatestRequest(), graph: new LatestRequest(), group: new LatestRequest() };
     this.positions = new Map();
-    this.diagrams = {};
+    this.diagrams = {}; this.visibleDiagrams = {};
+    this.trails = Object.fromEntries(["main", "group"].map(origin => [origin, new TrailView({
+      follow: byId(origin === "main" ? "follow-trail" : "follow-group-trail"),
+      back: byId(origin === "main" ? "trail-back" : "group-trail-back"),
+      label: byId(origin === "main" ? "trail-label" : "group-trail-label"),
+      onView: graph => {
+        this.callbacks.clearConnection(); this.draw(graph, origin, false);
+        if (graph.trail) {
+          const items = graph.trail.kind === "node" ? graph.nodes : graph.connections;
+          this.select(graph.trail.kind, items.find(item => item.id === graph.trail.id), origin);
+        }
+        byId(origin === "main" ? "graph-canvas" : "subgraph-canvas").scrollTop = 0;
+        if (origin === "main") byId("graph-count").textContent = `${graph.trail ? "Trail: " : graph.nodes.some(node => node.kind === "group") ? "Grouped: " : ""}${graph.event_count} events: ${graph.nodes.length} nodes: ${graph.connections.length} links`;
+      },
+    })]));
     this.columns = Object.fromEntries(["main", "group"].map(origin => [origin,
       new GraphColumns(byId(origin === "main" ? "graph-canvas" : "subgraph-canvas"),
         byId(origin === "main" ? "reset-columns" : "reset-group-columns"), () => this.redrawColumns(origin))]));
@@ -45,6 +60,7 @@ export class IdentityWorkbench {
   }
 
   cancel({ preserveGroup = false } = {}) {
+    this.trails.main.reset(); this.trails.group.reset();
     for (const request of Object.values(this.requests)) request.cancel();
     this.ready = false;
     if (preserveGroup && this.group) this.clearGroupView("Checking applied scope...");
@@ -131,6 +147,7 @@ export class IdentityWorkbench {
   }
 
   select(kind, item, origin = "main") {
+    this.trails[origin].preview(kind, item);
     this.selectionOrigin = origin;
     this.selectedGroup = kind === "node" && item.kind === "group" ? item : null;
     for (const node of document.querySelectorAll("#graph-canvas [role=button], #connection-list button, #subgraph-canvas [role=button], #subgraph-connections button, #subgraph-members button")) {
@@ -143,11 +160,13 @@ export class IdentityWorkbench {
       ...(origin === "group" ? { group: this.group.id } : {}) }, context);
   }
 
-  draw(graph, origin = "main") {
+  draw(graph, origin = "main", resetTrail = true) {
     const child = origin === "group";
-    this.diagrams[origin] = graph;
-    const layout = layoutNeighborhood(graph, child ? this.groupPositions : this.positions, this.columns[origin].prepare());
+    if (resetTrail) { this.diagrams[origin] = graph; this.trails[origin].reset(graph); }
+    this.visibleDiagrams[origin] = graph;
+    const layout = layoutNeighborhood(graph, this.trails[origin].focus ? this.trails[origin].positions : child ? this.groupPositions : this.positions, this.columns[origin].prepare());
     renderNeighborhood(byId(child ? "subgraph-canvas" : "graph-canvas"), layout, {
+      preview: (kind, item) => this.trails[origin].preview(kind, item),
       selectNode: node => this.select("node", node, origin),
       selectConnection: edge => this.select("connection", edge, origin),
     });
@@ -160,6 +179,8 @@ export class IdentityWorkbench {
       button.textContent = `${edge.incoming ? "S" : "A"}${edge.number}: ${edge.action}: ${edge.event_count}${edge.outcome === "failed" ? ": failed" : ": no error"}`;
       button.title = `${edge.service}\n${connectionLabel(edge)}`;
       if (edge.outcome === "failed") button.classList.add("warning");
+      button.addEventListener("mouseenter", () => this.trails[origin].preview("connection", edge));
+      button.addEventListener("focus", () => this.trails[origin].preview("connection", edge));
       button.addEventListener("click", () => this.select("connection", edge, origin));
       list.append(button);
     }
@@ -171,9 +192,10 @@ export class IdentityWorkbench {
     if (!this.diagrams[origin] || !container.querySelector("svg")) return;
     const selected = [...container.querySelectorAll('[aria-pressed="true"]')].map(item =>
       ({ node: item.dataset.nodeId, edge: item.dataset.connectionId }));
-    const layout = layoutNeighborhood(this.diagrams[origin], origin === "main" ? this.positions : this.groupPositions,
+    const layout = layoutNeighborhood(this.visibleDiagrams[origin], this.trails[origin].focus ? this.trails[origin].positions : origin === "main" ? this.positions : this.groupPositions,
       this.columns[origin].model);
     renderNeighborhood(container, layout, {
+      preview: (kind, item) => this.trails[origin].preview(kind, item),
       selectNode: node => this.select("node", node, origin),
       selectConnection: edge => this.select("connection", edge, origin),
     });
@@ -184,6 +206,7 @@ export class IdentityWorkbench {
   }
 
   clearGroupView(message) {
+    this.trails.group.reset();
     disablePager("members");
     for (const id of ["subgraph-search", "subgraph-search-submit"]) byId(id).disabled = true;
     for (const id of ["subgraph-members", "subgraph-canvas", "subgraph-connections"]) byId(id).replaceChildren();
@@ -260,6 +283,7 @@ export class IdentityWorkbench {
     byId("graph-canvas").replaceChildren(); byId("connection-list").replaceChildren();
     byId("graph-count").textContent = "";
     delete byId("graph-count").dataset.timings;
+    this.trails.main.reset();
     notice("graph-status", "Loading neighborhood...");
     const start = performance.now();
     try {

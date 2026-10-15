@@ -187,3 +187,6 @@ footer { min-height: 28px; padding: 0 12px; border-top: 1px solid var(--line); f
 .column-move { flex: 1; min-width: 0; cursor: ew-resize; }
 .column-resize { padding: 3px 5px; cursor: ew-resize; }
 #reset-columns { margin-left: auto; font-size: 12px; }
+
+.trail-controls { display: flex; align-items: center; gap: 6px; padding: 4px 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); font-size: 12px; }
+.trail-controls span { overflow-wrap: anywhere; }
