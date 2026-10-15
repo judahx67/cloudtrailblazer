@@ -19,7 +19,7 @@
 body { margin: 0; height: 100vh; display: flex; flex-direction: column; }
 h1, h2, h3, p { margin: 0; }
 h1, h2, h3 { font-size: 14px; font-weight: 600; }
-button, input { font: inherit; color: inherit; background: var(--background); border: 1px solid var(--control-line); border-radius: 0; min-height: 34px; }
+button, input, select { font: inherit; color: inherit; background: var(--background); border: 1px solid var(--control-line); border-radius: 0; min-height: 34px; }
 button { padding: 3px 9px; cursor: pointer; }
 button:hover:not(:disabled) { border-color: var(--control-line); background: var(--hover); }
 button:disabled { opacity: .45; cursor: default; }
@@ -190,3 +190,10 @@ footer { min-height: 28px; padding: 0 12px; border-top: 1px solid var(--line); f
 
 .trail-controls { display: flex; align-items: center; gap: 6px; padding: 4px 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); font-size: 12px; }
 .trail-controls span { overflow-wrap: anywhere; }
+
+.activity-search-form { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--line); }
+.activity-search-form label { font-size: 12px; }
+.activity-search-form input { flex: 1 1 180px; min-width: 0; }
+.activity-search-form select { min-height: 30px; max-width: 100%; font-size: 12px; }
+#activity-filter-status { flex-basis: 100%; font-size: 12px; overflow-wrap: anywhere; }
+#activity-filter-status:empty { display: none; }

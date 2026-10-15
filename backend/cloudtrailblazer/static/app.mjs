@@ -9,7 +9,7 @@ const requests = Object.fromEntries(["cases", "summary", "events", "evidence", "
 const state = {
   caseId: null, summary: null, caseOffset: 0, eventOffset: 0,
   selected: null, evidence: null, sourceOffset: 0, scope: null, scopePending: false, bounds: {},
-  view: "identity", connection: null,
+  view: "identity", connection: null, search: "", outcome: "",
 };
 const CASE_PAGE = 25;
 const EVENT_PAGE = 50;
@@ -25,7 +25,7 @@ function casePath(suffix = "") {
 
 function timeControls(enabled) {
   timeSlider.setEnabled(enabled);
-  for (const id of ["time-start", "time-end", "apply-time", "reset-time"]) {
+  for (const id of ["time-start", "time-end", "apply-time", "reset-time", "activity-search", "activity-outcome", "activity-submit", "activity-clear"]) {
     byId(id).disabled = !enabled;
   }
 }
@@ -105,6 +105,9 @@ async function selectCase(item) {
   state.summary = null;
   state.scope = null;
   state.bounds = {};
+  state.search = ""; state.outcome = "";
+  byId("activity-search").value = ""; byId("activity-outcome").value = "";
+  activityFilterStatus();
   state.scopePending = false;
   state.eventOffset = 0;
   clearEvidence();
@@ -156,16 +159,20 @@ async function loadEvents() {
     const value = state.bounds[bound];
     if (value) query.set(bound, value);
   }
+  if (state.view === "events") {
+    if (state.search) query.set("search", state.search);
+    if (state.outcome) query.set("outcome", state.outcome);
+  }
   try {
     const data = await requests.events.get(`${casePath("/events")}?${query}`);
     state.scope = data.scope;
     state.scopePending = false;
     renderEventRows(data.items);
     checkSelectionScope();
-    notice("events-status", data.total ? "" : "No activity in this time range.");
+    notice("events-status", data.total ? "" : state.view === "events" && (state.search || state.outcome) ? "No events match these filters and time range." : "No activity in this time range.");
     pager("events", state.eventOffset, data.items.length, data.total, EVENT_PAGE, "events");
     byId("event-region").setAttribute("aria-busy", "false");
-    byId("workspace-status").textContent = `Read only: ${data.total} case events in range`;
+    byId("workspace-status").textContent = `Read only: ${data.total} ${state.view === "events" && (state.search || state.outcome) ? "matching" : "case"} events in range`;
     if (state.view === "identity") await identityWorkbench.open(state.caseId, state.scope);
   } catch (error) {
     if (error.name !== "AbortError") {
@@ -278,6 +285,27 @@ async function loadSupportingEvents() {
     }
   }
 }
+
+function activityFilterStatus() {
+  const draft = byId("activity-search").value.trim() !== state.search || byId("activity-outcome").value !== state.outcome;
+  const filter = [state.search ? `“${state.search}”` : "", state.outcome === "failed" ? "Recorded error"
+    : state.outcome ? "No reported error" : ""].filter(Boolean).join(": ");
+  byId("activity-filter-status").textContent = [filter ? `Events only: ${filter}` : "", draft ? "Unapplied search edits" : ""].filter(Boolean).join(" > ");
+}
+byId("activity-search-form").addEventListener("submit", event => {
+  event.preventDefault();
+  if (!state.summary) return;
+  state.search = byId("activity-search").value.trim(); state.outcome = byId("activity-outcome").value;
+  state.eventOffset = 0; clearEvidence(); activityFilterStatus();
+  if (state.view !== "events") byId("view-events").click(); else loadEvents();
+});
+byId("activity-clear").addEventListener("click", () => {
+  state.search = ""; state.outcome = "";
+  byId("activity-search").value = ""; byId("activity-outcome").value = ""; activityFilterStatus();
+  if (state.view === "events") { state.eventOffset = 0; clearEvidence(); loadEvents(); }
+});
+byId("activity-search").addEventListener("input", activityFilterStatus);
+byId("activity-outcome").addEventListener("change", activityFilterStatus);
 
 for (const view of ["identity", "events"]) {
   byId(`view-${view}`).addEventListener("click", () => {

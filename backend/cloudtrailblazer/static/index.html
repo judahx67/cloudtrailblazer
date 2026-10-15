@@ -36,6 +36,15 @@
         <span id="time-draft" class="muted" role="status"></span>
         <span id="time-help" class="sr-only">Start included; end excluded. Enter an ISO timestamp with a timezone offset. Blank bounds are open.</span>
       </form>
+      <form id="activity-search-form" class="activity-search-form">
+        <label for="activity-search" title="Literal, case-insensitive search across original event JSON. Applied time bounds are retained.">Find activity</label>
+        <input id="activity-search" type="search" maxlength="512" placeholder="Action, IP, ARN, resource or event ID" disabled aria-describedby="activity-help">
+        <label class="sr-only" for="activity-outcome">Activity outcome</label>
+        <select id="activity-outcome" disabled><option value="">All outcomes</option><option value="failed">Recorded error</option><option value="no_error_reported">No reported error</option></select>
+        <button id="activity-submit" disabled>Search</button><button id="activity-clear" type="button" disabled>Clear</button>
+        <span id="activity-help" class="sr-only">Search filters Events only, within the applied time range. Text is literal, not a query language. No reported error does not guarantee success.</span>
+        <span id="activity-filter-status" class="muted" role="status"></span>
+      </form>
       <p id="events-status" class="notice" role="status">Choose a case.</p>
       <section id="graph-workspace" aria-label="Identity focus workspace">
         <form id="identity-search-form" class="identity-search-form"><label for="identity-search">Identity search</label><div class="search-controls"><input id="identity-search" type="search" placeholder="Name, ARN or account" disabled><button id="identity-search-submit" disabled>Search</button></div></form>

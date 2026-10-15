@@ -10,6 +10,44 @@ from cloudtrailblazer.cli import main
 from cloudtrailblazer.readers import ImportFailure
 
 
+def test_activity_search_literal_outcomes_time_pages_and_evidence(tmp_path):
+    base = {
+        "eventTime": "2024-08-18T13:05:25.123456Z",
+        "eventName": "DeleteTrail",
+        "eventID": "same-id",
+        "eventSource": "cloudtrail.amazonaws.com",
+        "sourceIPAddress": "192.0.2.12",
+        "userIdentity": {"arn": "arn:aws:iam::123456789012:user/alice"},
+        "requestParameters": {"name": "sensitive-trail"},
+        "errorCode": "AccessDenied",
+        "errorMessage": "100%_match",
+    }
+    later = {**base, "eventTime": "2024-08-18T13:06:25Z", "eventName": "StopLogging"}
+    later.pop("errorCode")
+    source = tmp_path / "activity.json"
+    source.write_text(json.dumps([base, base, later]), encoding="utf-8")
+    store = CaseStore(tmp_path / "cases")
+    case_id = store.import_case([source], name="Search checks")["case_id"]
+    for clue in ("deletetrail", "SENSITIVE-TRAIL", "192.0.2.12", "user/alice", "same-id", "%_"):
+        page = store.event_page(case_id, search=clue, outcome="failed", limit=1)
+        assert page["total"] == 1
+        evidence = store.evidence(case_id, page["items"][0]["event_key"])
+        assert evidence["event"] == base
+        assert len(evidence["occurrences"]) == 2
+    page = store.event_page(case_id, search="same-id", limit=1, offset=1)
+    assert page["total"] == 2
+    assert page["items"][0]["event_name"] == "StopLogging"
+    assert store.event_page(case_id, search="same-id", outcome="no_error_reported")["total"] == 1
+    assert (
+        store.event_page(case_id, search="same-id", end="2024-08-18T13:05:25.123456Z")["total"] == 0
+    )
+    assert store.event_page(case_id, search="' OR true --")["total"] == 0
+    with pytest.raises(ValueError, match="512"):
+        store.event_page(case_id, search="x" * 513)
+    with pytest.raises(ValueError, match="Outcome"):
+        store.event_page(case_id, outcome="success")
+
+
 @pytest.fixture
 def event():
     return {

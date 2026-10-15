@@ -112,8 +112,20 @@ def create_app(cases: CaseStore, *, relationships: RelationshipStore | None = No
         end: str | None = None,
         limit: PageLimit = 100,
         offset: PageOffset = 0,
+        search: str = "",
+        outcome: str | None = None,
     ):
-        return _json(cases.event_page(case_id, start=start, end=end, limit=limit, offset=offset))
+        return _json(
+            cases.event_page(
+                case_id,
+                start=start,
+                end=end,
+                limit=limit,
+                offset=offset,
+                search=search,
+                outcome=outcome,
+            )
+        )
 
     @app.get("/api/cases/{case_id}/events/{event_key}")
     def evidence(case_id: str, event_key: str, limit: PageLimit = 50, offset: PageOffset = 0):

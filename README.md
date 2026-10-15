@@ -1,6 +1,7 @@
 # Cloudtrailblazer
 
-A local CloudTrail investigation workbench with case storage and relationship queries.
+A local CloudTrail security-investigation workbench with case storage and relationship
+queries. Cloud administration troubleshooting is a secondary workflow.
 
 Agents in the owner's workspace start with the local, Git-ignored `AGENTS.md`.
 See [the current project state](docs/project-state.md) for completed milestones,
@@ -44,6 +45,12 @@ identity and inspect its direct neighborhood. Scroll the identity results to loa
 more automatically; there are no identity page buttons. Select a node for its full details, or
 a connection for supporting-event pages; select an event for its original JSON and
 source references. Enter/Space select graph items. Use Events for the full case table.
+Find activity searches original event JSON for a literal case-insensitive string,
+such as an action, IP, ARN, resource name or event ID (up to 512 characters). Choose
+All outcomes, Recorded error or No reported error; the last does not guarantee success.
+Search opens matching Events within applied time bounds. Clear restores unfiltered
+Events. Edits stay unapplied until Search. Filters persist across time/view changes,
+reset on case changes, and apply to Events only; graph evidence routes stay unchanged.
 Drag the panel dividers to resize cases, investigation and evidence. Arrow keys and
 Home/End resize focused dividers; Reset layout restores defaults. On narrower screens,
 panels stack and the dividers adjust height. Scroll regions also accept keyboard focus.
@@ -80,7 +87,7 @@ Grouping preserves unique counts and separates failed attempts from calls with n
 reported error. Mixed action names become Activity; inspect its supporting events
 for the full actions. Many group buckets/services can still exceed budgets: narrow
 time or member search when a visible limit error remains. No links are silently dropped.
-Session expansion controls, pan/zoom, the slider and detection UI remain future work.
+Session expansion controls, pan/zoom and detection UI remain future work.
 See the [grouping contract](docs/decisions/0005-grouped-neighborhoods.md) and
 [subgraph interaction](docs/decisions/0006-subgraph-window.md).
 For recurring larger local tests, see the [corpus guide](docs/testing/cloudtrail-datasets.md).
