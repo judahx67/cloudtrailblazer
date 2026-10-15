@@ -62,7 +62,14 @@ with Ctrl+C. Import remains a CLI operation; the web inspector is read-only.
 Raw views above 50 nodes or 80 connections automatically try service/resource and
 source-IP groups. These are detail thresholds, not grouped-view rejection limits.
 The SVG renderer accepts up to the server ceiling of 500 nodes and 1,500 connections,
-with scrolling and no omitted returned relationships. The separate 100,000-event scan
+with scrolling and no omitted returned relationships. Graphs fill the available
+width. Drag a Source IPs/Identity/Targets header to move its column; drag Width to
+resize its nodes. Left/Right (Shift for larger steps) and Home/End also adjust them.
+Reset columns restores automatic sizing; Reset layout resets both diagrams. Hover, focus or select a graph item, then use Follow trail to isolate its direct
+relationships (or just the selected connection and endpoints). Full neighborhood
+returns to the complete diagram. This follows observed relationships in the current
+diagram only, with the same supporting-event routes; time changes clear the trail. Column
+settings are independent for the main graph and child window, and reset on reload. The separate 100,000-event scan
 budget remains in place. Select a group, then Open group in the
 inspector to browse its members in one in-app window. Search or page 20 members at
 a time; member connections use the same supporting-event inspector and applied time
