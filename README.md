@@ -45,6 +45,10 @@ identity and inspect its direct neighborhood. Scroll the identity results to loa
 more automatically; there are no identity page buttons. Select a node for its full details, or
 a connection for supporting-event pages; select an event for its original JSON and
 source references. Enter/Space select graph items. Use Events for the full case table.
+Selecting an identity collapses its picker; open `Identity: name: Change` to choose
+another. The diagram fills the remaining panel height. Open `Connection list` for
+the alternative connection buttons. In Identity focus, `Find activity` reveals the
+search controls on demand; Events keeps them visible.
 Find activity searches original event JSON for a literal case-insensitive string,
 such as an action, IP, ARN, resource name or event ID (up to 512 characters). Choose
 All outcomes, Recorded error or No reported error; the last does not guarantee success.
@@ -72,8 +76,9 @@ The SVG renderer accepts up to the server ceiling of 500 nodes and 1,500 connect
 with scrolling and no omitted returned relationships. Graphs fill the available
 width. Drag a Source IPs/Identity/Targets header to move its column; drag Width to
 resize its nodes. Left/Right (Shift for larger steps) and Home/End also adjust them.
-Reset columns restores automatic sizing; Reset layout resets both diagrams. Hover, focus or select a graph item, then use Follow trail to isolate its direct
-relationships (or just the selected connection and endpoints). Full neighborhood
+Reset columns restores automatic sizing; Reset layout resets both diagrams. Select a graph item with click or Enter/Space, then use Follow trail to isolate its direct
+relationships (or just the selected connection and endpoints). Hovering or moving
+keyboard focus does not change the chosen target. Full neighborhood
 returns to the complete diagram. This follows observed relationships in the current
 diagram only, with the same supporting-event routes; time changes clear the trail. Column
 settings are independent for the main graph and child window, and reset on reload. The separate 100,000-event scan

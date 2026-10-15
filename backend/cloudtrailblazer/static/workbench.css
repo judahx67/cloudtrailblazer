@@ -197,3 +197,20 @@ footer { min-height: 28px; padding: 0 12px; border-top: 1px solid var(--line); f
 .activity-search-form select { min-height: 30px; max-width: 100%; font-size: 12px; }
 #activity-filter-status { flex-basis: 100%; font-size: 12px; overflow-wrap: anywhere; }
 #activity-filter-status:empty { display: none; }
+
+/* The investigation diagram owns remaining height; navigation expands on demand. */
+#graph-workspace { display: flex; flex: 1; flex-direction: column; overflow: auto; }
+#identity-picker { flex: none; margin: 0; padding: 0; border: 0; }
+#identity-picker > summary { padding: 4px 12px; min-height: 32px; border-bottom: 1px solid var(--line); }
+#identity-picker[open] .identity-change { display: none; }
+#identity-picker #identity-current { overflow-wrap: anywhere; }
+#identity-picker .identity-list { padding-top: 4px; }
+.graph-heading { flex: none; flex-wrap: wrap; gap: 6px; }
+.graph-heading h3 { flex: none; }
+#trail-label { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+#graph-stage { display: flex; flex: 1 0 180px; min-height: 180px; }
+#graph-canvas { flex: 1; min-height: 0; max-height: none; }
+#connection-options { flex: none; margin: 0; padding: 0; border: 0; border-top: 1px solid var(--line); max-height: 25vh; overflow: auto; }
+#connection-options > summary { padding: 4px 12px; min-height: 30px; background: var(--background); position: sticky; top: 0; z-index: 1; }
+#connection-options[open] { min-height: 60px; }
+#graph-workspace > .graph-legend, #graph-status, #graph-workspace > .graph-heading { flex-shrink: 0; }

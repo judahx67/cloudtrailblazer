@@ -25,7 +25,7 @@ function casePath(suffix = "") {
 
 function timeControls(enabled) {
   timeSlider.setEnabled(enabled);
-  for (const id of ["time-start", "time-end", "apply-time", "reset-time", "activity-search", "activity-outcome", "activity-submit", "activity-clear"]) {
+  for (const id of ["time-start", "time-end", "apply-time", "reset-time", "activity-search", "activity-outcome", "activity-submit", "activity-clear", "toggle-activity"]) {
     byId(id).disabled = !enabled;
   }
 }
@@ -108,6 +108,7 @@ async function selectCase(item) {
   state.search = ""; state.outcome = "";
   byId("activity-search").value = ""; byId("activity-outcome").value = "";
   activityFilterStatus();
+  activityPanel(false);
   state.scopePending = false;
   state.eventOffset = 0;
   clearEvidence();
@@ -286,6 +287,15 @@ async function loadSupportingEvents() {
   }
 }
 
+function activityPanel(expanded, focus = false) {
+  const open = state.view === "events" || expanded;
+  byId("activity-search-form").hidden = !open;
+  byId("toggle-activity").hidden = state.view === "events";
+  byId("toggle-activity").setAttribute("aria-expanded", String(open));
+  if (focus && open) byId("activity-search").focus();
+}
+byId("toggle-activity").addEventListener("click", () => activityPanel(byId("activity-search-form").hidden, true));
+
 function activityFilterStatus() {
   const draft = byId("activity-search").value.trim() !== state.search || byId("activity-outcome").value !== state.outcome;
   const filter = [state.search ? `“${state.search}”` : "", state.outcome === "failed" ? "Recorded error"
@@ -311,6 +321,7 @@ for (const view of ["identity", "events"]) {
   byId(`view-${view}`).addEventListener("click", () => {
     if (state.view === view) return;
     state.view = view;
+    activityPanel(false);
     requests.events.cancel();
     identityWorkbench.cancel();
     clearEvidence();

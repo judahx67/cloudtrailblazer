@@ -74,6 +74,8 @@ export class IdentityWorkbench {
     byId("identities-count").textContent = "";
     byId("graph-canvas").replaceChildren();
     byId("connection-list").replaceChildren();
+    byId("connection-list-summary").textContent = "Connection list";
+    byId("connection-options").open = false;
     byId("graph-count").textContent = "";
     delete byId("graph-count").dataset.timings;
     notice("graph-status", "Apply a valid time range to browse identities.");
@@ -84,6 +86,8 @@ export class IdentityWorkbench {
     this.cancel({ preserveGroup: this.caseId === caseId });
     if (this.caseId !== caseId) {
       this.identity = null; this.positions.clear(); this.search = "";
+      byId("identity-picker").open = true; byId("identity-current").textContent = "Choose identity";
+      byId("identity-current").removeAttribute("title");
       byId("identity-search").value = "";
     }
     this.caseId = caseId; this.scope = { ...scope }; this.memberOffset = 0; this.ready = true;
@@ -137,6 +141,10 @@ export class IdentityWorkbench {
       button.addEventListener("click", () => {
         this.closeGroup(false);
         this.identity = node; this.positions.clear(); this.loadGraph();
+        byId("identity-current").textContent = `Identity: ${node.label}`;
+        byId("identity-current").title = node.identifier;
+        byId("identity-picker").open = false;
+        byId("identity-picker").querySelector("summary").focus();
         for (const item of byId("identity-list").children) {
           item.setAttribute("aria-pressed", String(item.dataset.identityId === node.id));
         }
@@ -147,7 +155,7 @@ export class IdentityWorkbench {
   }
 
   select(kind, item, origin = "main") {
-    this.trails[origin].preview(kind, item);
+    this.trails[origin].select(kind, item);
     this.selectionOrigin = origin;
     this.selectedGroup = kind === "node" && item.kind === "group" ? item : null;
     for (const node of document.querySelectorAll("#graph-canvas [role=button], #connection-list button, #subgraph-canvas [role=button], #subgraph-connections button, #subgraph-members button")) {
@@ -166,12 +174,12 @@ export class IdentityWorkbench {
     this.visibleDiagrams[origin] = graph;
     const layout = layoutNeighborhood(graph, this.trails[origin].focus ? this.trails[origin].positions : child ? this.groupPositions : this.positions, this.columns[origin].prepare());
     renderNeighborhood(byId(child ? "subgraph-canvas" : "graph-canvas"), layout, {
-      preview: (kind, item) => this.trails[origin].preview(kind, item),
       selectNode: node => this.select("node", node, origin),
       selectConnection: edge => this.select("connection", edge, origin),
     });
     const list = byId(child ? "subgraph-connections" : "connection-list");
     list.replaceChildren();
+    if (!child) byId("connection-list-summary").textContent = `Connection list: ${layout.connections.length}`;
     for (const edge of layout.connections) {
       const button = element("button", undefined, "connection-choice");
       button.dataset.connectionId = edge.id; button.setAttribute("aria-pressed", "false");
@@ -179,8 +187,6 @@ export class IdentityWorkbench {
       button.textContent = `${edge.incoming ? "S" : "A"}${edge.number}: ${edge.action}: ${edge.event_count}${edge.outcome === "failed" ? ": failed" : ": no error"}`;
       button.title = `${edge.service}\n${connectionLabel(edge)}`;
       if (edge.outcome === "failed") button.classList.add("warning");
-      button.addEventListener("mouseenter", () => this.trails[origin].preview("connection", edge));
-      button.addEventListener("focus", () => this.trails[origin].preview("connection", edge));
       button.addEventListener("click", () => this.select("connection", edge, origin));
       list.append(button);
     }
@@ -195,7 +201,6 @@ export class IdentityWorkbench {
     const layout = layoutNeighborhood(this.visibleDiagrams[origin], this.trails[origin].focus ? this.trails[origin].positions : origin === "main" ? this.positions : this.groupPositions,
       this.columns[origin].model);
     renderNeighborhood(container, layout, {
-      preview: (kind, item) => this.trails[origin].preview(kind, item),
       selectNode: node => this.select("node", node, origin),
       selectConnection: edge => this.select("connection", edge, origin),
     });

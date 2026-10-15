@@ -3,7 +3,13 @@
 Last updated: 2026-10-15. Latest main checkpoint: `e1f73e5` (PRs #13–#16 reached main).
 Neutral white/gray surfaces, subtle blue selection and quieter borders are the
 owner-selected baseline. PR #12 was closed because #11 was sufficient.
-Current increment: `feature/activity-search`, directly based on main. Security
+Current increment: `fix/trail-selection`, dependent on compact-workspace PR #18
+(which depends on activity-search PR #17). Follow trail now requires explicit
+click or Enter/Space selection; hover and focus cannot overwrite its target.
+The previous increment is `fix/graph-workspace-space`.
+The graph fills remaining panel height; identity selection collapses its picker,
+Find activity opens search on demand, and the connection list expands separately.
+Activity search is implemented on `feature/activity-search`, based on main. Security
 investigation is the owner-selected primary workflow; cloud-admin troubleshooting
 is a secondary use of the same tools. The first increment adds a clue-based Events
 search with recorded-outcome filtering and original evidence access.
@@ -100,7 +106,7 @@ Implemented capabilities:
   keyboard alternatives. Columns stay ordered and separated, links remain attached,
   and node labels use the available width. Reset columns restores automatic sizing;
   Reset layout resets both diagrams. Main/child settings are independent and tab-local.
-- Hover, keyboard-focus or select a node/connection to prepare Follow trail. Activate
+- Click or activate a node/connection with Enter/Space to prepare Follow trail. Activate
   it to isolate direct incident links for a node or exactly one link and its endpoints.
   Counts use the selected item’s unique supporting-event count, not summed link counts.
   Return to Full neighborhood restores the original diagram; scope/focus/case/member
@@ -122,6 +128,20 @@ See the [Identity focus decision](decisions/0004-identity-neighborhood.md), the
 [HTTP/inspector decision](decisions/0003-local-events-inspector.md) for the contracts.
 
 ## Validation
+
+Trail selection fix: 69 Python and 41 client tests pass, including a renderer
+regression that crosses other items with hover/focus after selection. Browser
+checks confirm Follow starts disabled, selection sets its target, Tab across a
+connection leaves it unchanged, and Follow opens that selected trail. Ruff,
+JavaScript syntax and source-matching wheel checks pass. No new blockers.
+
+Compact workspace increment: 69 Python tests and 40 client tests pass; Ruff lint
+and formatting pass. Browser checks retain all 214 nodes and 233 connection buttons
+for cloudmapper in the public Splunk case. The diagram is 896px tall at the default
+1146x1244 viewport, replacing its former 390px cap. Identity and connection
+disclosures reopen with Enter; Find activity toggles visibly. At 430px width the
+document has no horizontal overflow. These are targeted layout checks, not an
+accessibility audit or a large-data performance claim.
 
 Latest verification on 2026-10-15 (earlier browser measurements below remain historical):
 
@@ -305,6 +325,8 @@ it establishes large-case performance.
 
 | Date | Step | Outcome |
 | --- | --- | --- |
+| 2026-10-15 | Stable trail target (`fix/trail-selection`) | Explicit click/Enter/Space selection replaces hover/focus targeting in both diagrams and lists; regression and browser checks. Depends on PR #18. |
+| 2026-10-15 | Compact investigation controls (`fix/graph-workspace-space`) | Collapsible identity/search/connection controls, combined trail heading and remaining-height graph; 69 Python and 40 client tests, targeted browser checks. Depends on PR #17. |
 | 2026-10-13 | Upstream inspection and project shape | Pinned Suzaku and rules; documented architecture and visual direction. |
 | 2026-10-13 | Case foundation (`20cec7a`) | Durable imports, queries, evidence, locked dependencies and 21 passing tests. |
 | 2026-10-13 | Agent anchor and reporting | Local anchor and project-state document with milestone reporting requirements. |
